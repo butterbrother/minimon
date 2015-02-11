@@ -183,9 +183,9 @@ public class httpProbe
      */
     public boolean iteration() {
         if (wget == null) {
-			lastError = "Not initialised";
-			return false;
-		}
+            lastError = "Not initialised";
+            return false;
+        }
         lastError = "";
 
         try {

@@ -109,7 +109,7 @@ public class init
             for (String item : MESSAGE_GENERAL_ACCESS)
                 System.out.println(item);
             //System.exit(EXIT_RUNTIME_ERROR);
-			return;
+            return;
         }
         gtf = null;
         for (File item : sub)
@@ -119,7 +119,7 @@ public class init
             for (String item : MESSAGE_GENERAL_LIB_NOT_FOUND)
                 System.out.println(item);
             //System.exit(EXIT_RUNTIME_ERROR);
-			return;
+            return;
         }
         // Перечисляем lib и подгружаем jar-файлы
         fileFixPerm.tryFixFilePerm(gtf.getAbsolutePath());
@@ -128,7 +128,7 @@ public class init
             for (String item : MESSAGE_GENERAL_ACCESS)
                 System.out.println(item);
             //System.exit(EXIT_RUNTIME_ERROR);
-			return;
+            return;
         }
         // Подгружаем
         for (File item : sub) {
@@ -160,9 +160,9 @@ public class init
     /**
      * Поиск в строковом массиве без учёта регистра
      *
-     * @param array         Массив
-     * @param searchPhrase  Искомый элемент
-     * @return              Наличие либо отсутствие
+     * @param array        Массив
+     * @param searchPhrase Искомый элемент
+     * @return Наличие либо отсутствие
      */
     private static boolean inArray(String[] array, String searchPhrase) {
         for (String item : array)
@@ -223,7 +223,7 @@ public class init
                     try {
                         // Считываем следующий параметр и проверяем, не является ли он ключом
                         String nextArg = args[i + 1];
-                        if (! inArray(KEY_ARGS, nextArg.toLowerCase()))
+                        if (!inArray(KEY_ARGS, nextArg.toLowerCase()))
                             configFileName = nextArg;
                     } catch (ArrayIndexOutOfBoundsException ignore) {
                         System.out.println("Another config file name not set");
@@ -260,7 +260,7 @@ public class init
                     if (debug) System.err.println("DEBUG: " + loCase + " has parameters");
                     try {
                         String nextArgs = args[i + 1].toLowerCase();
-                        if (! inArray(KEY_ARGS, nextArgs)) {
+                        if (!inArray(KEY_ARGS, nextArgs)) {
                             moduleName = nextArgs;
                             if (debug) {
                                 System.err.println("DEBUG: " + nextArgs + " is " + loCase + " parameter");
@@ -558,7 +558,7 @@ public class init
                 mainSettings.getCoreSubLogger("All probes restart"),
                 "RESTART"
         );
-		System.exit(EXIT_NORMAL);
+        System.exit(EXIT_NORMAL);
     }
 
     /**
@@ -575,6 +575,6 @@ public class init
                 mainSettings.getCoreSubLogger("Probe restart"),
                 "RESTART:" + moduleName
         );
-		System.exit(EXIT_NORMAL);
+        System.exit(EXIT_NORMAL);
     }
 }

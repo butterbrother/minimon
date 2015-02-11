@@ -132,7 +132,7 @@ public class controller
      * Оповещение о текущем статусе монитора сокета
      * Оповещает сам монитор
      *
-     * @param activeState   Текущий статус
+     * @param activeState Текущий статус
      */
     public void reportSocketState(boolean activeState) {
         this.socketActiveState = activeState;
@@ -151,23 +151,23 @@ public class controller
     public void startAll() {
         // Перечисляем и запускаем все тесты из доступных
         controllerLogger.debug("Start all");
-		if (settings.getProbeTypes().size() != 0) {
-			for (String item : settings.getProbeTypes()) {
-				LinkedList<String> probesList = settings.getProbesList(item);
-				if (probesList.size() != 0) {
-					controllerLogger.debug("Start probes type: " + item);
-					for (String subItem : settings.getProbesList(item)) {
-						LinkedHashMap<String, LinkedHashMap<String, String>> probeSettings = settings.readProbeSettings(item, subItem);
-						if (probeSettings != null)
-							startProbe(item, probeSettings);
-					}
-				} else
-					controllerLogger.info("Probes type " + item + " not found");
-			}
-		} else {
-			// Случай, когда параметр каким-то образом оказался пустым
-			controllerLogger.info("Probes types not defined");
-		}
+        if (settings.getProbeTypes().size() != 0) {
+            for (String item : settings.getProbeTypes()) {
+                LinkedList<String> probesList = settings.getProbesList(item);
+                if (probesList.size() != 0) {
+                    controllerLogger.debug("Start probes type: " + item);
+                    for (String subItem : settings.getProbesList(item)) {
+                        LinkedHashMap<String, LinkedHashMap<String, String>> probeSettings = settings.readProbeSettings(item, subItem);
+                        if (probeSettings != null)
+                            startProbe(item, probeSettings);
+                    }
+                } else
+                    controllerLogger.info("Probes type " + item + " not found");
+            }
+        } else {
+            // Случай, когда параметр каким-то образом оказался пустым
+            controllerLogger.info("Probes types not defined");
+        }
     }
 
     /**
@@ -183,11 +183,11 @@ public class controller
                 if (subItem.equalsIgnoreCase(moduleName)) {
                     found = true;
                     LinkedHashMap<String, LinkedHashMap<String, String>> probeSettings = settings.readProbeSettings(item, subItem);
-					if (probeSettings != null)
-						startProbe(item, probeSettings);
-					else
-						controllerLogger.warning("Unable to start: " + moduleName);
-				}
+                    if (probeSettings != null)
+                        startProbe(item, probeSettings);
+                    else
+                        controllerLogger.warning("Unable to start: " + moduleName);
+                }
             }
         }
         if (!found) {
@@ -212,13 +212,13 @@ public class controller
             }
         }
 
-		// Определяем, активен ли тест (Enable)
-		// Так же определяем самостоятельно, активен ли тест
-		String activityProbe = collections.searchKeyInSubIgnoreCase(probeSettings, MAIN_SECTION, PROBE_ENABLE_NAME, PROBE_ENABLE_DEFAULT);
-		if (! (activityProbe.equalsIgnoreCase("yes") || activityProbe.equalsIgnoreCase("enable") || Boolean.parseBoolean(activityProbe))) {
-			controllerLogger.info("Probe " + probeName + " disabled, edit [" + MAIN_SECTION + "] -> " + PROBE_ENABLE_NAME + " parameter");
-			return;
-		}
+        // Определяем, активен ли тест (Enable)
+        // Так же определяем самостоятельно, активен ли тест
+        String activityProbe = collections.searchKeyInSubIgnoreCase(probeSettings, MAIN_SECTION, PROBE_ENABLE_NAME, PROBE_ENABLE_DEFAULT);
+        if (!(activityProbe.equalsIgnoreCase("yes") || activityProbe.equalsIgnoreCase("enable") || Boolean.parseBoolean(activityProbe))) {
+            controllerLogger.info("Probe " + probeName + " disabled, edit [" + MAIN_SECTION + "] -> " + PROBE_ENABLE_NAME + " parameter");
+            return;
+        }
 
         // Считается, что данные тип передан методами start/startModule
         // Пытаемся создать объект

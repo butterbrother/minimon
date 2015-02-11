@@ -87,8 +87,8 @@ public interface staticValues {
             "Directory \"lib\" not found. It directory contains:",
             "-- lib4j library",
             "-- probes libraries",
-			"-- another executable files (for example, wget.exe for Windows)",
-			"Please create this directory in same jar-file directory"
+            "-- another executable files (for example, wget.exe for Windows)",
+            "Please create this directory in same jar-file directory"
     };
     // Сообщение об отсутствии файла конфигурации
     String MESSAGE_CONFIG_FILE_NOT_FOUND = "Configuration file not found: ";
@@ -101,7 +101,7 @@ public interface staticValues {
             "You can download in from site:",
             "http://sourceforge.net/projects/ini4j/files/ini4j-bin/",
             "Version >= 0.5.2",
-			"And place into lib directory"
+            "And place into lib directory"
     };
     // Сообщение при каждом запуске, инициализации считывателя настроек
     String STARTUP_INFO = "Minimon core initialisation with command-line params.";
@@ -120,7 +120,7 @@ public interface staticValues {
     String MAIL_TO_DEFAULT = "";
     // Названия активных/доступных модулей теста
     String ENABLED_MODULES_NAME = "Probes";
-	String ENABLED_MODULES_DEFAULT = "databaseProbe freeSpaceProbe httpProbe pingProbe procCheckProbe";
+    String ENABLED_MODULES_DEFAULT = "databaseProbe freeSpaceProbe httpProbe pingProbe procCheckProbe";
     // Файловый сокет
     String SOCKET_PATH_NAME = "Socket";
     String SOCKET_PATH_DEFAULT = "minimon.soc";
@@ -143,9 +143,9 @@ public interface staticValues {
     // Аналогично MAIN_SECTION
     // Имя
     String PROBE_NAME_KEY = "Name";
-	// Активность (включено/отключено)
-	String PROBE_ENABLE_NAME = "Enable";
-	String PROBE_ENABLE_DEFAULT = "Yes";
+    // Активность (включено/отключено)
+    String PROBE_ENABLE_NAME = "Enable";
+    String PROBE_ENABLE_DEFAULT = "Yes";
     // e-mail адреса отправки уведомлений
     // аналогично MAIL_TO_NAME/MAIN_TO_DEFAULT
     // Пауза между проверками
@@ -191,7 +191,7 @@ public interface staticValues {
     // e-mail-er отправки сообщений системы
     String CORE_MAILER = "System mail";
 
-	// Отображение справки
+    // Отображение справки
     String[] SHOW_HELP = {
             "Minimon (experimental)",
             "Run only under GNU/Linux, SUNOS and MS Windows",
@@ -199,34 +199,34 @@ public interface staticValues {
             "   --help | -h          		Show this help",
             "  --start | -s [module]    	Start daemon (or module)",
             "   --stop | -t [module]    	Stop daemon (or module)",
-			"--restart | -r [module]		Restart (all modules or one)",
-			" --config | -c config file		Use another config file",
-			"								(default - " + DEFAULT_CONFIG_FILE_NAME + " in same of jar directory)",
+            "--restart | -r [module]		Restart (all modules or one)",
+            " --config | -c config file		Use another config file",
+            "								(default - " + DEFAULT_CONFIG_FILE_NAME + " in same of jar directory)",
             "--runtime               		Run under daemon mode (no detach), for init",
-			"  --debug | -d					Run in debug mode",
-			"",
-			"Configuration file structure:",
-			"Minimon use ini files with structure:",
-			"[Section]",
-			"Param 1 = option",
-			"; Comment (optional, will be ignored)",
-			"Param 2 = foo option",
-			"",
-			"Options can start and end with \"\" - this quotes automaticaly deleted (removed only pair)",
-			"",
-			"Main configuration file structure (default name is " + DEFAULT_CONFIG_FILE_NAME + "):",
-			"[" + MAIN_SECTION + "]",
-			MAIL_TO_NAME + " = minimon administrators e-mails (default - " + MAIL_TO_DEFAULT + ")",
-			ENABLED_MODULES_NAME + " = active probes types (default - " + ENABLED_MODULES_DEFAULT + ").",
-			"	Build-in probes (default value) can be set with simple name. External - with full (include \"java packages\") path",
-			SOCKET_PATH_NAME + " = controller socket path name (default - " + SOCKET_PATH_DEFAULT + ")",
-			"   This socket need to control daemon process.",
-			"[" + LOG_SECTION + "]",
-			LOG_PATH_NAME + " = application log path (default - " + LOG_PATH_DEFAULT + ")",
-			LOG_ENABLE_COMPRESSION_NAME + " = enable old log compression (gzip), default - " + LOG_ENABLE_COMPRESSION_DEFAULT,
-			"[" + PROBES_SETTINGS_PATH_SECTION + "]",
-			"   This section contains custom path to own probes. Parameter name = probe type",
-			"   Parameter option = ini-files for this probe type location"
+            "  --debug | -d					Run in debug mode",
+            "",
+            "Configuration file structure:",
+            "Minimon use ini files with structure:",
+            "[Section]",
+            "Param 1 = option",
+            "; Comment (optional, will be ignored)",
+            "Param 2 = foo option",
+            "",
+            "Options can start and end with \"\" - this quotes automaticaly deleted (removed only pair)",
+            "",
+            "Main configuration file structure (default name is " + DEFAULT_CONFIG_FILE_NAME + "):",
+            "[" + MAIN_SECTION + "]",
+            MAIL_TO_NAME + " = minimon administrators e-mails (default - " + MAIL_TO_DEFAULT + ")",
+            ENABLED_MODULES_NAME + " = active probes types (default - " + ENABLED_MODULES_DEFAULT + ").",
+            "	Build-in probes (default value) can be set with simple name. External - with full (include \"java packages\") path",
+            SOCKET_PATH_NAME + " = controller socket path name (default - " + SOCKET_PATH_DEFAULT + ")",
+            "   This socket need to control daemon process.",
+            "[" + LOG_SECTION + "]",
+            LOG_PATH_NAME + " = application log path (default - " + LOG_PATH_DEFAULT + ")",
+            LOG_ENABLE_COMPRESSION_NAME + " = enable old log compression (gzip), default - " + LOG_ENABLE_COMPRESSION_DEFAULT,
+            "[" + PROBES_SETTINGS_PATH_SECTION + "]",
+            "   This section contains custom path to own probes. Parameter name = probe type",
+            "   Parameter option = ini-files for this probe type location"
     };
 }
 

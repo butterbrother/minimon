@@ -162,7 +162,7 @@ public class helper
                 minCheckDelay,
                 maxCheckDelay
         );
-		log.debug("Check Delay: " + Long.toString(checkDelay));
+        log.debug("Check Delay: " + Long.toString(checkDelay));
 
         // Необходимость фильтра
         needFailFilter = parseBoolean(
@@ -170,7 +170,7 @@ public class helper
                 PROBE_NEED_FAIL_FILTER_NAME,
                 PROBE_NEED_FAIL_FILTER_DEFAULT
         ) & enableFailFilter;
-		log.debug("Need fail filter: " + Boolean.toString(needFailFilter));
+        log.debug("Need fail filter: " + Boolean.toString(needFailFilter));
 
         // Пауза фильтра
         failFilterDelay = 1000 * getLongParamValue(
@@ -180,7 +180,7 @@ public class helper
                 minFailFilterDelay,
                 maxFailFilterDelay
         );
-		log.debug("Fail filter delay: " + Long.toString(failFilterDelay));
+        log.debug("Fail filter delay: " + Long.toString(failFilterDelay));
 
         // Число итераций фильтра
         failFilterCount = getLongParamValue(
@@ -190,7 +190,7 @@ public class helper
                 minFailFilterCount,
                 maxFailFilterCount
         );
-		log.debug("Fail filter count: " + Long.toString(failFilterCount));
+        log.debug("Fail filter count: " + Long.toString(failFilterCount));
 
         // Минимальное число успешных итераций фильтра
         failFilterSuccessCount = getLongParamValue(
@@ -200,7 +200,7 @@ public class helper
                 minFailFilterCount,
                 failFilterCount // Должен быть <= общего числа итераций
         );
-		log.debug("Fail filter success count: " + Long.toString(failFilterSuccessCount));
+        log.debug("Fail filter success count: " + Long.toString(failFilterSuccessCount));
 
         // Увеличение паузы в случае провала
         failUpInterval = 1000 * getLongParamValue(
@@ -210,7 +210,7 @@ public class helper
                 minFailUpIntervals,
                 maxFailUpIntervals
         );
-		log.debug("Fail up interval: " + Long.toString(failUpInterval));
+        log.debug("Fail up interval: " + Long.toString(failUpInterval));
 
         // Необходимость удвоения паузы в случае провала
         doubleFailIntervals = parseBoolean(
@@ -218,7 +218,7 @@ public class helper
                 PROBE_DOUBLE_FAIL_INTERVAL_NAME,
                 PROBE_DOUBLE_FAIL_INTERVAL_DEFAULT
         ) & enableDoubleFailInterval;
-		log.debug("Double fail intervals: " + Boolean.toString(doubleFailIntervals));
+        log.debug("Double fail intervals: " + Boolean.toString(doubleFailIntervals));
 
         // Необходимость трассировки
         needTraceRoute = parseBoolean(
@@ -226,7 +226,7 @@ public class helper
                 PROBE_NEED_TRACE_ROUTE_NAME,
                 PROBE_NEED_TRACE_ROUTE_DEFAULT
         ) & enableTraceRoute;
-		log.debug("Need trace route: " + Boolean.toString(needTraceRoute));
+        log.debug("Need trace route: " + Boolean.toString(needTraceRoute));
     }
 
     /**

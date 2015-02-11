@@ -256,19 +256,19 @@ public class logger {
             logMessage.append("This error indicate that an index is either negative or greater than the size of the string").append(System.lineSeparator())
                     .append("Usually, this error indicates an incorrect design of this application").append(System.lineSeparator());
 
-		// Трейс
+        // Трейс
         logMessage.append("Stack trace:").append(System.lineSeparator());
         for (StackTraceElement item : exc.getStackTrace()) {
-			//logMessage.append(border).append("at ").append(item.toString()).append(System.lineSeparator());
-			// Выше предыдущий, похожий на оригинальный java trace route
-			// Ниже новый, отображает класс, метод, строку и файл
-			logMessage.append("  ")
-					.append("at File: ").append(item.getFileName())
-					.append(", Line: ").append(item.getLineNumber())
-					.append(", Class: ").append(item.getClassName())
-					.append(", Method: ").append(item.getMethodName())
-					.append(System.lineSeparator());
-		}
+            //logMessage.append(border).append("at ").append(item.toString()).append(System.lineSeparator());
+            // Выше предыдущий, похожий на оригинальный java trace route
+            // Ниже новый, отображает класс, метод, строку и файл
+            logMessage.append("  ")
+                    .append("at File: ").append(item.getFileName())
+                    .append(", Line: ").append(item.getLineNumber())
+                    .append(", Class: ").append(item.getClassName())
+                    .append(", Method: ").append(item.getMethodName())
+                    .append(System.lineSeparator());
+        }
 
         logMessage.append("-------------------- End cut --------------------");
         fatal(logMessage);

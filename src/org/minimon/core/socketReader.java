@@ -47,11 +47,11 @@ public class socketReader
                     // Пересоздаём сокет-файл
                     fileFixPerm.tryFixFilePerm(socketFile.getAbsolutePath());
                     if (socketFile.exists())
-						if (! socketFile.delete())
-							log.error("Unable to delete socket file");
+                        if (!socketFile.delete())
+                            log.error("Unable to delete socket file");
                     if (!socketFile.exists())
-						if (! socketFile.createNewFile())
-							log.error("Unable to create socket file");
+                        if (!socketFile.createNewFile())
+                            log.error("Unable to create socket file");
                     long socketModified = socketFile.lastModified();
                     BufferedReader socketReader;
                     String buffer;

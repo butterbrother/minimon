@@ -176,8 +176,8 @@ public class probeThread<T extends probe>
                             + "-- Mail recipients: " + (mailRecipients != null ? mailRecipients : "none") + System.lineSeparator()
                             + "-- Checking pause (delay): " + (checkDelay / 1000) + " s." + System.lineSeparator()
                             + "-- Fail filter: " + (needFailFilter ? "enabled" : "disabled") + System.lineSeparator()
-                            + "-- Fail filter count: " + (failFilterCount ) + System.lineSeparator()
-                            + "-- Fail filter minimal success count: " + (failFilterSuccessCount ) + System.lineSeparator()
+                            + "-- Fail filter count: " + (failFilterCount) + System.lineSeparator()
+                            + "-- Fail filter minimal success count: " + (failFilterSuccessCount) + System.lineSeparator()
                             + "-- Fail filter iterations delay: " + (failFilterDelay / 1000) + " s." + System.lineSeparator()
                             + "-- Fail filter interval up: " + (failUpInterval / 1000) + " s." + System.lineSeparator()
                             + "-- Fail filter need double interval: " + (doubleFailIntervals ? "enabled" : "disabled") + System.lineSeparator()
@@ -316,28 +316,28 @@ public class probeThread<T extends probe>
             failFilterSuccessCount = failFilterCount / 2;
         }
         for (long i = 1; i <= failFilterCount; i++) {
-			if (! readyFlag) return true;	// Досрочное завершение фильтра в случае отключения теста
+            if (!readyFlag) return true;    // Досрочное завершение фильтра в случае отключения теста
 
-			log.debug("Fail filter: iteration " + Long.toString(i) + " of " + Long.toString(failFilterCount));
+            log.debug("Fail filter: iteration " + Long.toString(i) + " of " + Long.toString(failFilterCount));
             if (probeItem.iteration()) {
-				success++;
-				log.debug("Success, current success count: " + Long.toString(success));
-			} else {
-				log.debug("Unsuccessful, current success count: " + Long.toString(success));
-			}
-			log.debug("Do sleep " + Long.toString(failFilterDelay) + " ms.");
+                success++;
+                log.debug("Success, current success count: " + Long.toString(success));
+            } else {
+                log.debug("Unsuccessful, current success count: " + Long.toString(success));
+            }
+            log.debug("Do sleep " + Long.toString(failFilterDelay) + " ms.");
 
             if (readyFlag) Thread.sleep(failFilterDelay);
         }
 
-		if (debugState) {
-			log.debug("Success: "
-					+ Long.toString(success)
-					+ ", Minimal success count: "
-					+ Long.toString(failFilterSuccessCount)
-					+ ", filter state: "
-					+ Boolean.toString(success >= failFilterSuccessCount));
-		}
+        if (debugState) {
+            log.debug("Success: "
+                    + Long.toString(success)
+                    + ", Minimal success count: "
+                    + Long.toString(failFilterSuccessCount)
+                    + ", filter state: "
+                    + Boolean.toString(success >= failFilterSuccessCount));
+        }
         return (success >= failFilterSuccessCount);
     }
 
@@ -487,7 +487,7 @@ public class probeThread<T extends probe>
             // Либо до момента переключения флага готовности
             while (thisThread.isAlive() && readyFlag) {
                 try {
-					log.debug("Iteration started");
+                    log.debug("Iteration started");
                     //Итерация
                     if (!probeItem.iteration()) {
                         // Получаем ошибку-предупреждение
@@ -518,7 +518,7 @@ public class probeThread<T extends probe>
                         bufferWait = checkDelay; // Сбрасываем суммарную паузу
                     }
 
-					log.debug("Iteration end");
+                    log.debug("Iteration end");
                     if (readyFlag) Thread.sleep(bufferWait);
                 } catch (InterruptedException ignore) {
                     log.debug("Probe interrupted");

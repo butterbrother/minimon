@@ -126,20 +126,20 @@ public class settingsReader
                 LinkedHashMap<String, LinkedHashMap<String, String>> convertedConfig = collections.IniToLinkedHashMap(probeConfig);
 
                 // Выполняем поиск имени теста, если нет - возвращаем
-				String nameFromIni = collections.searchKeyInSubIgnoreCase(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY);
+                String nameFromIni = collections.searchKeyInSubIgnoreCase(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY);
                 if ((nameFromIni != null && nameFromIni.equalsIgnoreCase(probeName)) || probeName.equalsIgnoreCase(probeInfo.getName())) {
-					settings = convertedConfig;
+                    settings = convertedConfig;
 
-					// Проверяем, есть ли в параметре имя теста, если нет - подставляем имя файла
-					if (nameFromIni == null) {
-						// Нет секции Main - создаём
-						if (settings.get(MAIN_SECTION) == null) {
-							settings.put(MAIN_SECTION, new LinkedHashMap<String, String>());
-						}
-						// Добавляем имя из файла в качестве имени теста
-						settings.get(MAIN_SECTION).put(PROBE_NAME_KEY, probeInfo.getName());
-					}
-				}
+                    // Проверяем, есть ли в параметре имя теста, если нет - подставляем имя файла
+                    if (nameFromIni == null) {
+                        // Нет секции Main - создаём
+                        if (settings.get(MAIN_SECTION) == null) {
+                            settings.put(MAIN_SECTION, new LinkedHashMap<String, String>());
+                        }
+                        // Добавляем имя из файла в качестве имени теста
+                        settings.get(MAIN_SECTION).put(PROBE_NAME_KEY, probeInfo.getName());
+                    }
+                }
             } catch (Exception ignore) {
                 settingsReaderLogger.debug(ignore);
             }
@@ -163,7 +163,7 @@ public class settingsReader
      * @return Разобранный список либо null, если ничего нет
      */
     private LinkedList<String> parseRAWProbeTypes(String rawProbeTypes) {
-		// Выполняем разбор списка
+        // Выполняем разбор списка
         StringTokenizer rawString = new StringTokenizer(rawProbeTypes, " ,;/");
         LinkedList<String> values = new LinkedList<>();
         while (rawString.hasMoreElements()) {
@@ -197,7 +197,7 @@ public class settingsReader
      * @param probeType Тип тестов
      * @return Список файлов либо null при отсутствии или ошибке ввода-вывода
      */
-	@Nullable
+    @Nullable
     private File[] getCategorisedProbeList(String probeType) {
         // Прежде всего проверяем, существует ли такой тип тестов
         String findingProbeType = collections.searchInLinkedList(getProbeTypes(), probeType);
@@ -252,10 +252,10 @@ public class settingsReader
         // Для отладки, перечисляем список файлов
         if (debugState) {
             StringBuilder buffer = new StringBuilder();
-				buffer.append("Files list: ");
-				for (File item : filesList) {
-					buffer.append("[").append(item.getName()).append("]");
-				}
+            buffer.append("Files list: ");
+            for (File item : filesList) {
+                buffer.append("[").append(item.getName()).append("]");
+            }
             settingsReaderLogger.debug(buffer);
         }
 
@@ -270,8 +270,8 @@ public class settingsReader
      */
     public LinkedList<String> getProbesList(String probeType) {
 
-		// Список доступных файлов, изначально пуст
-		LinkedList<String> values = new LinkedList<>();
+        // Список доступных файлов, изначально пуст
+        LinkedList<String> values = new LinkedList<>();
 
         // Получаем список доступных файлов
         File[] filesList = getCategorisedProbeList(probeType);
@@ -292,14 +292,14 @@ public class settingsReader
 
         // Для отладки, перечисляем имена
         if (debugState) {
-			StringBuilder buffer = new StringBuilder();
-			if (values.size() != 0) {
-				buffer.append("Probe type ").append(probeType).append(" has elements: ");
-				for (String item : values)
-					buffer.append("[").append(item).append("]");
-			} else {
-				buffer.append("Probe type ").append(probeType).append(" no has elements.");
-			}
+            StringBuilder buffer = new StringBuilder();
+            if (values.size() != 0) {
+                buffer.append("Probe type ").append(probeType).append(" has elements: ");
+                for (String item : values)
+                    buffer.append("[").append(item).append("]");
+            } else {
+                buffer.append("Probe type ").append(probeType).append(" no has elements.");
+            }
             settingsReaderLogger.debug(buffer);
         }
 
