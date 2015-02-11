@@ -108,7 +108,8 @@ public class init
         if (sub == null) {
             for (String item : MESSAGE_GENERAL_ACCESS)
                 System.out.println(item);
-            System.exit(EXIT_RUNTIME_ERROR);
+            //System.exit(EXIT_RUNTIME_ERROR);
+			return;
         }
         gtf = null;
         for (File item : sub)
@@ -117,7 +118,8 @@ public class init
         if (gtf == null || (!gtf.isDirectory())) {
             for (String item : MESSAGE_GENERAL_LIB_NOT_FOUND)
                 System.out.println(item);
-            System.exit(EXIT_RUNTIME_ERROR);
+            //System.exit(EXIT_RUNTIME_ERROR);
+			return;
         }
         // Перечисляем lib и подгружаем jar-файлы
         fileFixPerm.tryFixFilePerm(gtf.getAbsolutePath());
@@ -125,7 +127,8 @@ public class init
         if (sub == null) {
             for (String item : MESSAGE_GENERAL_ACCESS)
                 System.out.println(item);
-            System.exit(EXIT_RUNTIME_ERROR);
+            //System.exit(EXIT_RUNTIME_ERROR);
+			return;
         }
         // Подгружаем
         for (File item : sub) {
@@ -555,6 +558,7 @@ public class init
                 mainSettings.getCoreSubLogger("All probes restart"),
                 "RESTART"
         );
+		System.exit(EXIT_NORMAL);
     }
 
     /**
@@ -571,5 +575,6 @@ public class init
                 mainSettings.getCoreSubLogger("Probe restart"),
                 "RESTART:" + moduleName
         );
+		System.exit(EXIT_NORMAL);
     }
 }

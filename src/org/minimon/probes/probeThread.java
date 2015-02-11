@@ -159,7 +159,7 @@ public class probeThread<T extends probe>
             // Проверяем, необходимо ли исполнять внешние команды при поступлении событий
             String externalWarningCommand = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_WARNING);
             String externalAlertCommand = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_ALERT);
-            String doWait = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_DO_WAIT);
+            String doWait = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_DO_WAIT, "Yes");
 
             if (externalWarningCommand != null)
                 externalWarningApplication = buildExternalExecutor(externalWarningCommand);
@@ -215,7 +215,7 @@ public class probeThread<T extends probe>
         if (readyFlag && thisThread == null) {
             thisThread = new Thread(this, probeName);
             thisThread.start();
-            thisThread.setDaemon(true);
+            //thisThread.setDaemon(true);
         }
     }
 

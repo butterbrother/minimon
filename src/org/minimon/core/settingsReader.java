@@ -124,10 +124,22 @@ public class settingsReader
             try {
                 Ini probeConfig = new Ini(new InputStreamReader(new FileInputStream(probeInfo), "UTF-8"));
                 LinkedHashMap<String, LinkedHashMap<String, String>> convertedConfig = collections.IniToLinkedHashMap(probeConfig);
+
                 // Выполняем поиск имени теста, если нет - возвращаем
 				String nameFromIni = collections.searchKeyInSubIgnoreCase(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY);
-                if ((nameFromIni != null && nameFromIni.equalsIgnoreCase(probeName)) || probeName.equalsIgnoreCase(probeInfo.getName()))
-                    settings = convertedConfig;
+                if ((nameFromIni != null && nameFromIni.equalsIgnoreCase(probeName)) || probeName.equalsIgnoreCase(probeInfo.getName())) {
+					settings = convertedConfig;
+
+					// Проверяем, есть ли в параметре имя теста, если нет - подставляем имя файла
+					if (nameFromIni == null) {
+						// Нет секции Main - создаём
+						if (settings.get(MAIN_SECTION) == null) {
+							settings.put(MAIN_SECTION, new LinkedHashMap<String, String>());
+						}
+						// Добавляем имя из файла в качестве имени теста
+						settings.get(MAIN_SECTION).put(PROBE_NAME_KEY, probeInfo.getName());
+					}
+				}
             } catch (Exception ignore) {
                 settingsReaderLogger.debug(ignore);
             }

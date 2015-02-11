@@ -81,7 +81,7 @@ public class logger {
         // Запоминаем дату создания лога
         logCreateDate = Calendar.getInstance();
         // Инициализируем список собственных проблем
-        internalErrors = new TreeSet<String>();
+        internalErrors = new TreeSet<>();
 
         // Проверяем, какая дата изменения текущего лога
         File test = new File(logName);
@@ -106,8 +106,7 @@ public class logger {
         // И создаём первый лог
         try {
             logOuter = new Formatter(new OutputStreamWriter(new FileOutputStream(this.logName, true), "UTF-8"));
-        } catch (FileNotFoundException ignore) {
-        } catch (UnsupportedEncodingException ignore) {
+        } catch (FileNotFoundException | UnsupportedEncodingException ignore) {
         }
 
         // Сжатие лога после переименования. Сжимать до создания не можем - компрессор требует наличия логгера
@@ -210,7 +209,7 @@ public class logger {
                             errorMessages += item + System.lineSeparator();
                         }
                         // Сразу обнуляем
-                        internalErrors = new TreeSet<String>();
+                        internalErrors = new TreeSet<>();
                         // Получаем дату и время
                         cl = Calendar.getInstance();
                         // Пишем в лог
@@ -257,9 +256,19 @@ public class logger {
             logMessage.append("This error indicate that an index is either negative or greater than the size of the string").append(System.lineSeparator())
                     .append("Usually, this error indicates an incorrect design of this application").append(System.lineSeparator());
 
+		// Трейс
         logMessage.append("Stack trace:").append(System.lineSeparator());
-        for (StackTraceElement item : exc.getStackTrace())
-            logMessage.append("   at ").append(item.toString()).append(System.lineSeparator());
+        for (StackTraceElement item : exc.getStackTrace()) {
+			//logMessage.append(border).append("at ").append(item.toString()).append(System.lineSeparator());
+			// Выше предыдущий, похожий на оригинальный java trace route
+			// Ниже новый, отображает класс, метод, строку и файл
+			logMessage.append("  ")
+					.append("at File: ").append(item.getFileName())
+					.append(", Line: ").append(item.getLineNumber())
+					.append(", Class: ").append(item.getClassName())
+					.append(", Method: ").append(item.getMethodName())
+					.append(System.lineSeparator());
+		}
 
         logMessage.append("-------------------- End cut --------------------");
         fatal(logMessage);
