@@ -487,6 +487,7 @@ public class probeThread<T extends probe>
             // Либо до момента переключения флага готовности
             while (thisThread.isAlive() && readyFlag) {
                 try {
+					log.debug("Iteration started");
                     //Итерация
                     if (!probeItem.iteration()) {
                         // Получаем ошибку-предупреждение
@@ -516,6 +517,8 @@ public class probeThread<T extends probe>
                         log.debug("All ok");
                         bufferWait = checkDelay; // Сбрасываем суммарную паузу
                     }
+
+					log.debug("Iteration end");
                     if (readyFlag) Thread.sleep(bufferWait);
                 } catch (InterruptedException ignore) {
                     log.debug("Probe interrupted");

@@ -137,7 +137,7 @@ public class httpProbe
         // Далее разбираем, конвертируем и создаём параметры запуска в зависимости от типа ОС
         // и указанных параметров
         // wget считает все полученные пустые параметры именами сайтов
-        LinkedList<String> params = new LinkedList<String>();
+        LinkedList<String> params = new LinkedList<>();
 
         switch (cross.getSystemType()) {
             case (OS_TYPE_LINUX):
@@ -182,7 +182,10 @@ public class httpProbe
      * @return Результат проверки
      */
     public boolean iteration() {
-        if (wget == null) return false;
+        if (wget == null) {
+			lastError = "Not initialised";
+			return false;
+		}
         lastError = "";
 
         try {
