@@ -211,6 +211,15 @@ public class controller
                 return;
             }
         }
+
+		// Определяем, активен ли тест (Enable)
+		// Так же определяем самостоятельно, активен ли тест
+		String activityProbe = collections.searchKeyInSubIgnoreCase(probeSettings, MAIN_SECTION, PROBE_ENABLE_NAME, PROBE_ENABLE_DEFAULT);
+		if (! (activityProbe.equalsIgnoreCase("yes") || activityProbe.equalsIgnoreCase("enable") || Boolean.parseBoolean(activityProbe))) {
+			controllerLogger.info("Probe " + probeName + " disabled, edit [" + MAIN_SECTION + "] -> " + PROBE_ENABLE_NAME + " parameter");
+			return;
+		}
+
         // Считается, что данные тип передан методами start/startModule
         // Пытаемся создать объект
         probe toExec;

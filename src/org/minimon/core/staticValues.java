@@ -143,12 +143,14 @@ public interface staticValues {
     // Аналогично MAIN_SECTION
     // Имя
     String PROBE_NAME_KEY = "Name";
+	// Активность (включено/отключено)
+	String PROBE_ENABLE_NAME = "Enable";
+	String PROBE_ENABLE_DEFAULT = "Yes";
     // e-mail адреса отправки уведомлений
     // аналогично MAIL_TO_NAME/MAIN_TO_DEFAULT
     // Пауза между проверками
     String PROBE_CHECK_DELAY_NAME = "Check Delay";
     String PROBE_CHECK_DELAY_DEFAULT = "60";
-    String PROBE_CHECK_DELAY_ERROR = "Unable to parse [Main]->Check Delay parameter (invalid number format)";
     // Необходимость фильтрации случайных ошибок
     String PROBE_NEED_FAIL_FILTER_NAME = "Fail Filter";
     String PROBE_NEED_FAIL_FILTER_DEFAULT = "Yes";

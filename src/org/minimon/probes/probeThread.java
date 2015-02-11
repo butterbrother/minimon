@@ -111,6 +111,8 @@ public class probeThread<T extends probe>
     ) {
         // Определяем имя самостоятельно
         probeName = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]");
+
+
         this.probeType = probeType;
         this.probeItem = probeItem;
         // Вначале передаём параметры
@@ -174,8 +176,8 @@ public class probeThread<T extends probe>
                             + "-- Mail recipients: " + (mailRecipients != null ? mailRecipients : "none") + System.lineSeparator()
                             + "-- Checking pause (delay): " + (checkDelay / 1000) + " s." + System.lineSeparator()
                             + "-- Fail filter: " + (needFailFilter ? "enabled" : "disabled") + System.lineSeparator()
-                            + "-- Fail filter count: " + (failFilterCount / 1000) + " s." + System.lineSeparator()
-                            + "-- Fail filter minimal success count: " + (failFilterSuccessCount / 1000) + " s." + System.lineSeparator()
+                            + "-- Fail filter count: " + (failFilterCount ) + System.lineSeparator()
+                            + "-- Fail filter minimal success count: " + (failFilterSuccessCount ) + System.lineSeparator()
                             + "-- Fail filter iterations delay: " + (failFilterDelay / 1000) + " s." + System.lineSeparator()
                             + "-- Fail filter interval up: " + (failUpInterval / 1000) + " s." + System.lineSeparator()
                             + "-- Fail filter need double interval: " + (doubleFailIntervals ? "enabled" : "disabled") + System.lineSeparator()
@@ -276,7 +278,7 @@ public class probeThread<T extends probe>
         // для этого разбиваем оригинал, разделители - пробелы
         // Динамический массив облегчит задачу - не придётся предварительно
         // считать число элементов
-        LinkedList<String> parsed = new LinkedList<String>();
+        LinkedList<String> parsed = new LinkedList<>();
         // Позиция
         int pos = 0;
         // В кавычках?
@@ -313,12 +315,30 @@ public class probeThread<T extends probe>
         if (failFilterSuccessCount > failFilterCount) {
             failFilterSuccessCount = failFilterCount / 2;
         }
-        for (int i = 1; i <= failFilterCount; i++) {
-            if (probeItem.iteration())
-                success++;
-            Thread.sleep(failFilterDelay);
+        for (long i = 1; i <= failFilterCount; i++) {
+			if (! readyFlag) return true;	// Досрочное завершение фильтра в случае отключения теста
+
+			log.debug("Fail filter: iteration " + Long.toString(i) + " of " + Long.toString(failFilterCount));
+            if (probeItem.iteration()) {
+				success++;
+				log.debug("Success, current success count: " + Long.toString(success));
+			} else {
+				log.debug("Unsuccessful, current success count: " + Long.toString(success));
+			}
+			log.debug("Do sleep " + Long.toString(failFilterDelay) + " ms.");
+
+            if (readyFlag) Thread.sleep(failFilterDelay);
         }
-        return (success < failFilterSuccessCount);
+
+		if (debugState) {
+			log.debug("Success: "
+					+ Long.toString(success)
+					+ ", Minimal success count: "
+					+ Long.toString(failFilterSuccessCount)
+					+ ", filter state: "
+					+ Boolean.toString(success >= failFilterSuccessCount));
+		}
+        return (success >= failFilterSuccessCount);
     }
 
     /**
@@ -496,7 +516,7 @@ public class probeThread<T extends probe>
                         log.debug("All ok");
                         bufferWait = checkDelay; // Сбрасываем суммарную паузу
                     }
-                    Thread.sleep(bufferWait);
+                    if (readyFlag) Thread.sleep(bufferWait);
                 } catch (InterruptedException ignore) {
                     log.debug("Probe interrupted");
                     offPobeThread();
@@ -505,7 +525,7 @@ public class probeThread<T extends probe>
         } catch (Exception gerr) {
             log.appErrorWriter(gerr);
             try {
-                Thread.sleep(checkDelay);
+                if (readyFlag) Thread.sleep(checkDelay);
             } catch (InterruptedException ignore) {
                 log.debug("Probe interrupted");
                 offPobeThread();
