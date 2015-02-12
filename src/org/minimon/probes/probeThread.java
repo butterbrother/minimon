@@ -34,6 +34,7 @@ package org.minimon.probes;
 
 import org.minimon.core.logger;
 import org.minimon.core.staticValues;
+import org.minimon.system.StreamGrabber;
 import org.minimon.system.cross;
 import org.minimon.system.procExec;
 import org.minimon.system.sendMail;
@@ -376,44 +377,29 @@ public class probeThread<T extends probe>
      */
     private String runExternalCommand(String name, procExec executor, boolean needWait) {
         if (executor != null) {
-            String returnValue = "";
-            BufferedReader executeErrors = null;
-            BufferedReader executeOutput = null;
-            try {
+			StringBuilder returnValue = new StringBuilder();
+			try {
                 executor.execute();
                 // Собираем выхлоп только если это необходимо
                 if (needWait) {
-                    executeErrors = executor.getStderr();
-                    executeOutput = executor.getStdout();
-                    executor.waitFor();
+					StreamGrabber executeErrors = new StreamGrabber(executor.getStderr(), "<stderr>", log.getModuleSubLogger("StdErr grabber"));
+					StreamGrabber executeOutput = new StreamGrabber(executor.getStdout(), "", log.getModuleSubLogger("StdOut grabber"));
+					executor.waitFor();
 
-                    returnValue += name + " result:" + System.lineSeparator();
-                    String buffer;
-                    while ((buffer = executeErrors.readLine()) != null) {
-                        returnValue += "<stderr> " + buffer + System.lineSeparator();
-                    }
-                    while ((buffer = executeOutput.readLine()) != null) {
-                        returnValue += buffer + System.lineSeparator();
-                    }
-                    executeErrors.close();
-                    executeOutput.close();
-                }
+					returnValue.append(name).append(" result:").append(System.lineSeparator())
+							.append(executeErrors.getResults()).append(System.lineSeparator())
+							.append(executeOutput.getResults()).append(System.lineSeparator());
+				}
             } catch (InterruptedException exc) {
                 // Прерываем исполнителя и закрываем ридеры
                 executor.terminate();
-                try {
-                    if (executeErrors != null) executeErrors.close();
-                    if (executeOutput != null) executeOutput.close();
-                } catch (IOException io) {
-                    log.appErrorWriter(io);
-                }
                 log.debug(name + " interrupted");
                 offPobeThread();
             } catch (IOException exc) {
                 log.appErrorWriter(exc);
             }
-            return returnValue;
-        } else {
+			return returnValue.toString();
+		} else {
             return "";
         }
     }
@@ -490,13 +476,6 @@ public class probeThread<T extends probe>
             log.info("Probe switch off");
 			// Преключаем флаг готовности-активности
 			readyFlag = false;
-			// Пробуем уведомить спящий поток
-			if (thisThread != null)
-				try {
-					thisThread.notify();
-				} catch (Exception exc) {
-					log.debug(exc);
-				}
 		}
     }
 

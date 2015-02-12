@@ -179,8 +179,8 @@ public class databaseProbe
 
         // Получаем экземпляр драйвера
         try {
-            driver = (Driver) Class.forName(JDBCDriver).newInstance();
-        } catch (ClassNotFoundException exc) {
+			driver = (Driver) Class.forName(JDBCDriver.trim()).newInstance();
+		} catch (ClassNotFoundException exc) {
             // Либо не получаем
             lastError = "JDBC Driver not found for name " + JDBCDriver + System.lineSeparator()
                     + "add database JDBC driver into \"lib\" directory";

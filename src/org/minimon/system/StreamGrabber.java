@@ -63,8 +63,14 @@ public class StreamGrabber
 		try {
 			while ((buffer = execOutBuffer.readLine()) != null)
 				output.append(prefix).append(buffer).append(System.lineSeparator());
+			execOutBuffer.close();
 		} catch (IOException exc) {
 			grabLog.appErrorWriter(exc);
+			try {
+				execOutBuffer.close();
+			} catch (IOException closeExc) {
+				grabLog.appErrorWriter(closeExc);
+			}
 		}
 	}
 
@@ -75,16 +81,5 @@ public class StreamGrabber
 	 */
 	public String getResults() {
 		return output.toString();
-	}
-
-	/**
-	 * Закрытие потока выхлопа
-	 */
-	public void closeOut() {
-		try {
-			execOutBuffer.close();
-		} catch (IOException exc) {
-			grabLog.appErrorWriter(exc);
-		}
 	}
 }

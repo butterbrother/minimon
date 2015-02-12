@@ -208,21 +208,14 @@ public class httpProbe
 			if (phrase != null) {
 				if (results.getResults().toLowerCase().contains(phrase.toLowerCase())) {
 					// Если находим
-					results.closeOut();
-					errors.closeOut();
 					log.debug("Phrase - " + phrase + ", found");
 					return true;
 				} else {
 					// Если не находим
 					lastError += System.lineSeparator() + "Check phrase not found";
-					results.closeOut();
-					errors.closeOut();
 					return false;
 				}
 			}
-
-			results.closeOut();
-			errors.closeOut();
 		} catch (IOException exc) {
 			log.appErrorWriter(exc);
 		} catch (InterruptedException exc) {

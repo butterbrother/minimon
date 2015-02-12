@@ -34,6 +34,7 @@ package org.minimon.probes;
 
 import org.minimon.core.logger;
 import org.minimon.core.staticValues;
+import org.minimon.system.StreamGrabber;
 import org.minimon.system.cross;
 import org.minimon.system.procExec;
 import org.minimon.utils.collections;
@@ -149,19 +150,12 @@ public class pingProbe
         lastError = "";
         try {
             ping.execute();
-            BufferedReader result = ping.getStdout();
-            BufferedReader errors = ping.getStderr();
-            ping.waitFor();
-            String buffer;
-            while ((buffer = result.readLine()) != null) {
-                lastError += buffer + System.lineSeparator();
-            }
-            while ((buffer = errors.readLine()) != null) {
-                lastError += buffer + System.lineSeparator();
-            }
-            result.close();
-            errors.close();
-        } catch (IOException exc) {
+			StreamGrabber results = new StreamGrabber(ping.getStdout(), "", log.getModuleSubLogger("StdOut grabber"));
+			StreamGrabber errors = new StreamGrabber(ping.getStderr(), "<stderr>", log.getModuleSubLogger("StdErr grabber"));
+			ping.waitFor();
+			lastError += errors.getResults() + System.lineSeparator() + results.getResults();
+			lastError += results.getResults();
+		} catch (IOException exc) {
             lastError = log.appErrorWriter(exc);
             return false;
         } catch (InterruptedException exc) {
