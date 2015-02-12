@@ -41,8 +41,7 @@ import org.minimon.utils.collections;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Самостоятельный поток-процесс проверки.
@@ -93,6 +92,16 @@ public class probeThread<T extends probe>
     private procExec externalWarningApplication = null;
     private procExec externalAlertApplication = null;
     private boolean needWaitExternalApplication = false;
+
+	// Статистические данные
+	// Дата-время начала работы
+	private Calendar startDate = Calendar.getInstance();
+	// Общее число ошибок и успешных проверок
+	private long totalSuccessCount = 0;
+	private long totalWarningsCount = 0;
+	private long totalFailsCount = 0;
+	// Ошибки и успехи за последний час (должны подчищаться при каждом подсчёте)
+	private LinkedHashMap<Calendar, Integer> lastStates = new LinkedHashMap<>();
 
     /**
      * Инициализация с передачей проверки
@@ -423,12 +432,15 @@ public class probeThread<T extends probe>
                 externalAlertApplication,
                 needWaitExternalApplication
         );
+		// Получаем таблицу событий за последний час
+		String lastEventsTable = getLastHourStates();
 
         // Создаём сообщение для лога и mail-ера
         String message = "Probe alert: " + probeName + System.lineSeparator()
                 + "Category: " + probeType + System.lineSeparator()
                 + "Message: " + lastErrorMessage + System.lineSeparator()
-                + traceRouteResult + externalResult;
+				+ traceRouteResult + externalResult + System.lineSeparator()
+				+ lastEventsTable;
 
         // Создаём тему письма для mail-ера
         String topic = "Alert in probe " + probeName + " (" + probeType + ")";
@@ -452,12 +464,15 @@ public class probeThread<T extends probe>
                 externalWarningApplication,
                 needWaitExternalApplication
         );
+		// Получаем таблицу событий за последний час
+		String lastEventsTable = getLastHourStates();
 
         // Создаём сообщение для лога и mail-ера
         String message = "Probe warning: " + probeName + System.lineSeparator()
                 + "Category: " + probeType + System.lineSeparator()
                 + "Message: " + lastErrorMessage + System.lineSeparator()
-                + traceRouteResult + externalResult;
+				+ traceRouteResult + externalResult + System.lineSeparator()
+				+ lastEventsTable;
 
         // Создаём тему письма для mail-ера
         String topic = "Warning in probe " + probeName + " (" + probeType + ")";
@@ -473,12 +488,66 @@ public class probeThread<T extends probe>
     public void offPobeThread() {
         if (readyFlag) {
             log.info("Probe switch off");
-            readyFlag = false;
-        }
+			// Преключаем флаг готовности-активности
+			readyFlag = false;
+			// Пробуем уведомить спящий поток
+			if (thisThread != null)
+				try {
+					thisThread.notify();
+				} catch (Exception exc) {
+					log.debug(exc);
+				}
+		}
     }
 
-    @Override
-    public void run() {
+	/**
+	 * Генерирует таблицу - статистику за последний час
+	 * Кроме этого в вывод попадает общее число с момента запуска
+	 *
+	 * @return Статистика за последний час
+	 */
+	private String getLastHourStates() {
+		// Подчищаем таблицу
+		cleanupLastState();
+
+		// Составляем таблицу
+		Formatter stateTable = new Formatter();
+		stateTable.format("%23s - %20s%n", "Date-time", "State");    // Заголовок
+		stateTable.format("%s%n", "---------------------------------------------------");
+		for (Map.Entry<Calendar, Integer> item : lastStates.entrySet()) {
+			stateTable.format("%tY-%<tm-%<td %<tH:%<tM:%<tS.%<tL - %s%n", item.getKey(), checkStates[item.getValue()]);    // Полное дата-время до мс - тип события
+		}
+		stateTable.format("%s%n", "---------------------------------------------------");
+
+		// Итоговые результаты (всего с момента старта)
+		stateTable.format("Total (from %tY-%<tm-%<td %<tH:%<tM):%n", startDate);
+		stateTable.format("Fails: %d, Warnings: %d, Success: %d%n", totalFailsCount, totalWarningsCount, totalSuccessCount);
+
+		return stateTable.toString();
+	}
+
+	/**
+	 * Подчищает таблицу событий за последний час
+	 * Удаляются все события дальше одного часа
+	 */
+	private void cleanupLastState() {
+		// Получаем текущее время-дату для сравнения
+		long currentDateTime = Calendar.getInstance().getTimeInMillis();
+
+		// Отчищаем таблицу событий за последний час
+		Iterator<Map.Entry<Calendar, Integer>> iter = lastStates.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry<Calendar, Integer> item = iter.next();
+			if ((currentDateTime - item.getKey().getTimeInMillis()) > 3600000) // 3 600 000 = 1 час в миллисекундах
+				iter.remove();
+		}
+	}
+
+	@Override
+	/**
+	 * Процесс-поток проверок
+	 */
+	public void run() {
         log.info("Probe " + probeName + " in running mode");
         try {
             // Суммарная плавающая пауза
@@ -496,14 +565,24 @@ public class probeThread<T extends probe>
 
                         // Выполняем повторные итерации, если это необходимо
                         if (needFailFilter) {
-                            if (!failFilter()) {
-                                log.debug("Alert detected");
+							if (!failFilter()) {
+								// Пишем статистику
+								lastStates.put(Calendar.getInstance(), STATE_ALERT); // Добавляем статус тревоги
+								totalFailsCount++;    // Наращиваем число тревог
+								// Отсылаем оповещение
+								log.debug("Alert detected");
                                 alertAction(errorMessage);
-                            } else {
+							} else {
+								lastStates.put(Calendar.getInstance(), STATE_WARNING);    // Добавляем статус предупреждения
+								totalWarningsCount++;    // Наращиваем число предупреждений
+
                                 log.debug("Warning detected");
                                 warningAction(errorMessage);
                             }
-                        } else {
+						} else {
+							lastStates.put(Calendar.getInstance(), STATE_ALERT); // Добавляем статус тревоги
+							totalFailsCount++;	// Наращиваем число тревог
+
                             log.debug("Alert detected");
                             alertAction(errorMessage);
                         }
@@ -516,10 +595,18 @@ public class probeThread<T extends probe>
                         // Всё прошло нормально
                         log.debug("All ok");
                         bufferWait = checkDelay; // Сбрасываем суммарную паузу
-                    }
 
-                    log.debug("Iteration end");
-                    if (readyFlag) Thread.sleep(bufferWait);
+						// Увеличиваем счетчик успехов
+						totalSuccessCount++;
+
+						// Добавляем дату успеха
+						lastStates.put(Calendar.getInstance(), STATE_SUCCESS);
+					}
+
+					log.debug("Iteration end");
+					// Подчищаем таблицу состояний, что бы не переполнялась
+					cleanupLastState();
+					if (readyFlag) Thread.sleep(bufferWait);
                 } catch (InterruptedException ignore) {
                     log.debug("Probe interrupted");
                     offPobeThread();
