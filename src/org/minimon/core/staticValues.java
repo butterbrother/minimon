@@ -175,8 +175,8 @@ public interface staticValues {
     String PROBE_FAIL_FILTER_SUCCESS_COUNT_DEFAULT = "5";
     // Дополнительный интервал между неудачными проверками
     String PROBE_FAIL_UP_INTERVAL_NAME = "Fail Up Delay";
-    String PROBE_FAIL_UP_INTERVAL_DEFAULT = "20";
-    // Удвоение дополнительного интервала при каждой неудачной проверке (подряд)
+	String PROBE_FAIL_UP_INTERVAL_DEFAULT = "60";
+	// Удвоение дополнительного интервала при каждой неудачной проверке (подряд)
     String PROBE_DOUBLE_FAIL_INTERVAL_NAME = "Multiple Fail Delay";
     String PROBE_DOUBLE_FAIL_INTERVAL_DEFAULT = "Yes";
     // Необходимость проведения трассировка
