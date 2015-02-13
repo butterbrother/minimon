@@ -81,7 +81,9 @@ public class probeThread<T extends probe>
     private boolean doubleFailIntervals;
     // Необходимость трассировки до удалённого сервера
     private boolean needTraceRoute;
-    // Активность
+	// Наростающая пауза между одинаковыми сообщениями
+	private long messagesUpInterval;
+	// Активность
     private boolean readyFlag = false;
     // Отладка
     private boolean debugState;
@@ -100,6 +102,7 @@ public class probeThread<T extends probe>
 	private long totalSuccessCount = 0;
 	private long totalWarningsCount = 0;
 	private long totalFailsCount = 0;
+	private long lastFailFilterResult = 0;
 	// Ошибки и успехи за последний час (должны подчищаться при каждом подсчёте)
 	private LinkedHashMap<Calendar, Integer> lastStates = new LinkedHashMap<>();
 
@@ -172,6 +175,19 @@ public class probeThread<T extends probe>
             String externalAlertCommand = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_ALERT);
             String doWait = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_DO_WAIT, "Yes");
 
+			// Получаем паузу между сообщениями о провалах
+			messagesUpInterval = (
+					probeHelper != null ?
+							probeHelper.getLongParamValue(
+									MAIN_SECTION,
+									PROBE_MESSAGES_DELAY_UP_NAME,
+									PROBE_MESSAGES_DELAY_UP_DEFAULT,
+									60,
+									3600
+							) * 1000
+							: 300 * 1000
+			);
+
             if (externalWarningCommand != null)
                 externalWarningApplication = buildExternalExecutor(externalWarningCommand);
             if (externalAlertCommand != null)
@@ -193,7 +209,8 @@ public class probeThread<T extends probe>
                             + "-- Trace to network host: " + (needTraceRoute ? "enabled" : "disabled") + System.lineSeparator()
                             + "-- External command on warning: " + (externalWarningCommand != null ? externalWarningCommand : "not use") + System.lineSeparator()
                             + "-- External command on alert: " + (externalAlertCommand != null ? externalAlertCommand : "not use")
-            );
+							+ "-- Message up delay: " + (messagesUpInterval / 1000) + " s."
+			);
 
 
             // Выставляем флаг готовности
@@ -320,7 +337,8 @@ public class probeThread<T extends probe>
      * @return Статус фильтра
      */
     private boolean failFilter() throws InterruptedException {
-        long success = 0;
+		lastFailFilterResult = 0;
+		long success = 0;
         if (failFilterSuccessCount > failFilterCount) {
             failFilterSuccessCount = failFilterCount / 2;
         }
@@ -330,7 +348,8 @@ public class probeThread<T extends probe>
             log.debug("Fail filter: iteration " + Long.toString(i) + " of " + Long.toString(failFilterCount));
             if (probeItem.iteration()) {
                 success++;
-                log.debug("Success, current success count: " + Long.toString(success));
+				lastFailFilterResult++;
+				log.debug("Success, current success count: " + Long.toString(success));
             } else {
                 log.debug("Unsuccessful, current success count: " + Long.toString(success));
             }
@@ -409,31 +428,25 @@ public class probeThread<T extends probe>
      * @param lastErrorMessage Последнее сообщение теста
      */
     private void alertAction(String lastErrorMessage) {
-        // Выполняем трассировку
-        String traceRouteResult = runTraceRoute();
-        // Выполняем внешнюю команду
-        String externalResult = runExternalCommand(
-                "Alert action external application execute",
-                externalAlertApplication,
-                needWaitExternalApplication
-        );
-		// Получаем таблицу событий за последний час
-		String lastEventsTable = getLastHourStates();
+		if (needSendMessage()) {
+			// Выполняем внешнюю команду
+			String externalResult = runExternalCommand(
+					"Alert action external application execute",
+					externalAlertApplication,
+					needWaitExternalApplication
+			);
 
-        // Создаём сообщение для лога и mail-ера
-        String message = "Probe alert: " + probeName + System.lineSeparator()
-                + "Category: " + probeType + System.lineSeparator()
-                + "Message: " + lastErrorMessage + System.lineSeparator()
-				+ traceRouteResult + externalResult + System.lineSeparator()
-				+ lastEventsTable;
+			// Создаём тему письма для mail-ера
+			String topic = "Alert in probe " + probeName + " (" + probeType + ")";
 
-        // Создаём тему письма для mail-ера
-        String topic = "Alert in probe " + probeName + " (" + probeType + ")";
+			// Создаём тело письма
+			String message = mailBody("alert", lastErrorMessage, externalResult);
 
-        // Записываем в лог и отправляем сообщение
-        log.alert(message);
-        mail.send(topic, message);
-    }
+			// Записываем в лог и отправляем сообщение
+			log.alert(message);
+			mail.send(topic, message);
+		}
+	}
 
     /**
      * Действия по событию предупреждения
@@ -441,31 +454,69 @@ public class probeThread<T extends probe>
      * @param lastErrorMessage Последнее сообщение теста
      */
     private void warningAction(String lastErrorMessage) {
-        // Выполняем трассировку
-        String traceRouteResult = runTraceRoute();
-        // Выполняем внешнюю команду
-        String externalResult = runExternalCommand(
-                "Warning action external application execute",
-                externalWarningApplication,
-                needWaitExternalApplication
-        );
-		// Получаем таблицу событий за последний час
-		String lastEventsTable = getLastHourStates();
+		if (needSendMessage()) {
+			// Выполняем внешнюю команду
+			String externalResult = runExternalCommand(
+					"Warning action external application execute",
+					externalWarningApplication,
+					needWaitExternalApplication
+			);
 
-        // Создаём сообщение для лога и mail-ера
-        String message = "Probe warning: " + probeName + System.lineSeparator()
-                + "Category: " + probeType + System.lineSeparator()
-                + "Message: " + lastErrorMessage + System.lineSeparator()
-				+ traceRouteResult + externalResult + System.lineSeparator()
-				+ lastEventsTable;
+			// Создаём тему письма для mail-ера
+			String topic = "Warning in probe " + probeName + " (" + probeType + ")";
 
-        // Создаём тему письма для mail-ера
-        String topic = "Warning in probe " + probeName + " (" + probeType + ")";
+			// Создаём тело письма
+			String message = mailBody("warning", lastErrorMessage, externalResult);
 
-        // Записываем в лог и отправляем сообщение
-        log.alert(message);
-        mail.send(topic, message);
-    }
+			// Записываем в лог и отправляем сообщение
+			log.warning(message);
+			mail.send(topic, message);
+		}
+	}
+
+	/**
+	 * Формирование тела письма для различных уровней тревог:
+	 * - Выполнение внешних команд (при необходимости)
+	 * - Сбор данных для передачи в сообщении
+	 *
+	 * @param actionLevel      Уровень тревоги
+	 * @param lastErrorMessage Последнее сообщение об ошибке
+	 * @return Сообщение для отправки
+	 */
+	private String mailBody(String actionLevel, String lastErrorMessage, String externalResult) {
+		// Создаём сообщение для лога и mail-ера
+		StringBuilder message = new StringBuilder();
+
+		// Начало сообщения, имя и уровень
+		message.append("Probe ").append(actionLevel).append(": ").append(probeName).append(System.lineSeparator());
+		// Категория
+		message.append("Category: ").append(probeType).append(System.lineSeparator());
+		// Сообщение
+		message.append("Message: ").append(lastErrorMessage).append(System.lineSeparator());
+		if (needFailFilter) {
+			// Дописываем результат фильтра случайных ошибок, если он есть
+			message.append("Fail filter result: ").append(lastFailFilterResult).append("/").append(failFilterCount).append(System.lineSeparator());
+		}
+		// Результат трассировки
+		message.append(runTraceRoute()).append(System.lineSeparator());
+		// Результат выполнения внешней команды
+		message.append(externalResult).append(System.lineSeparator());
+		// Таблица событий за последний час
+		message.append(getLastHourStates());
+
+		return message.toString();
+	}
+
+	/**
+	 * Необходимость отправки сообщения. Рассчитывается из:
+	 *
+	 * @return Необходимость в отправке сообщения
+	 */
+	private boolean needSendMessage() {
+		return true;
+		// TODO: Допелить
+		// Тут должна быть хитрая формула рассчёта
+	}
 
     /**
      * Плавное и безопасное отключение потока-проверки

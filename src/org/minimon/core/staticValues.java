@@ -182,7 +182,10 @@ public interface staticValues {
     // Необходимость проведения трассировка
     String PROBE_NEED_TRACE_ROUTE_NAME = "Traceroute";
     String PROBE_NEED_TRACE_ROUTE_DEFAULT = "Yes";
-    // [external]
+	// Увеличение паузы в случае постоянных предупреждений/провалов
+	String PROBE_MESSAGES_DELAY_UP_NAME = "Messages Delay";
+	String PROBE_MESSAGES_DELAY_UP_DEFAULT = "300";
+	// [external]
     // исполнение внешних приложений
     // Имя
     String EXTERNAL_EXEC_NAME = "External";
