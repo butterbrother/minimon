@@ -65,16 +65,16 @@ public interface staticValues {
     // Solaris
     int OS_TYPE_SUN = 3;
 
-	//----------------------------------------------------------------------------------------
-	// Статусы проверок (для хранения последних событий)
-	int STATE_SUCCESS = 0;
-	int STATE_WARNING = 1;
-	int STATE_ALERT = 2;
-	String[] checkStates = {
-			"Success",
-			"Warning",
-			"Alert"
-	};
+    //----------------------------------------------------------------------------------------
+    // Статусы проверок (для хранения последних событий)
+    int STATE_SUCCESS = 0;
+    int STATE_WARNING = 1;
+    int STATE_ALERT = 2;
+    String[] checkStates = {
+            "Success",
+            "Warning",
+            "Alert"
+    };
 
     //----------------------------------------------------------------------------------------
     // Имена файлов и путей
@@ -175,17 +175,17 @@ public interface staticValues {
     String PROBE_FAIL_FILTER_SUCCESS_COUNT_DEFAULT = "5";
     // Дополнительный интервал между неудачными проверками
     String PROBE_FAIL_UP_INTERVAL_NAME = "Fail Up Delay";
-	String PROBE_FAIL_UP_INTERVAL_DEFAULT = "60";
-	// Удвоение дополнительного интервала при каждой неудачной проверке (подряд)
+    String PROBE_FAIL_UP_INTERVAL_DEFAULT = "60";
+    // Удвоение дополнительного интервала при каждой неудачной проверке (подряд)
     String PROBE_DOUBLE_FAIL_INTERVAL_NAME = "Multiple Fail Delay";
     String PROBE_DOUBLE_FAIL_INTERVAL_DEFAULT = "Yes";
     // Необходимость проведения трассировка
     String PROBE_NEED_TRACE_ROUTE_NAME = "Traceroute";
     String PROBE_NEED_TRACE_ROUTE_DEFAULT = "Yes";
-	// Увеличение паузы в случае постоянных предупреждений/провалов
-	String PROBE_MESSAGES_DELAY_UP_NAME = "Messages Delay";
-	String PROBE_MESSAGES_DELAY_UP_DEFAULT = "300";
-	// [external]
+    // Увеличение паузы в случае постоянных предупреждений/провалов
+    String PROBE_MESSAGES_DELAY_UP_NAME = "Messages Delay";
+    String PROBE_MESSAGES_DELAY_UP_DEFAULT = "300";
+    // [external]
     // исполнение внешних приложений
     // Имя
     String EXTERNAL_EXEC_NAME = "External";

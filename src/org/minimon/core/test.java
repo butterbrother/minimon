@@ -43,7 +43,9 @@ public class test {
         System.out.println();
         new org.minimon.probes.databaseProbe();
         new org.minimon.probes.pingProbe();
+        new org.minimon.probes.procCheckProbe();
         new org.minimon.probes.httpProbe();
+        new org.minimon.probes.freeSpaceProbe();
         /*try {
             File socketFile = new File("skt");
             if (! socketFile.exists()) socketFile.createNewFile();

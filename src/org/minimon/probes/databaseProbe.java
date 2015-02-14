@@ -164,10 +164,10 @@ public class databaseProbe
         // Парсим и корректируем
         basicParser.parseBasical(
                 // Ограничения базовых параметров
-				30,      // Минимально допустимая пауза между проверками
-				86400,  // Максимально допустимая пауза между проверками
-				false,   // Необходимость работы фильтра случайных ошибок с точки зрения теста
-				1,      // Минимально допустимая пауза фильтра
+                30,      // Минимально допустимая пауза между проверками
+                86400,  // Максимально допустимая пауза между проверками
+                false,   // Необходимость работы фильтра случайных ошибок с точки зрения теста
+                1,      // Минимально допустимая пауза фильтра
                 60,     // Максимально допустимая пауза фильтра
                 2,      // Минимально допустимое число итераций фильтра
                 100,    // Максимально допустимое число итераций фильтра
@@ -179,8 +179,8 @@ public class databaseProbe
 
         // Получаем экземпляр драйвера
         try {
-			driver = (Driver) Class.forName(JDBCDriver.trim()).newInstance();
-		} catch (ClassNotFoundException exc) {
+            driver = (Driver) Class.forName(JDBCDriver.trim()).newInstance();
+        } catch (ClassNotFoundException exc) {
             // Либо не получаем
             lastError = "JDBC Driver not found for name " + JDBCDriver + System.lineSeparator()
                     + "add database JDBC driver into \"lib\" directory";

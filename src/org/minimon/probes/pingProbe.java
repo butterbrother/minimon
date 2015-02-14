@@ -39,7 +39,6 @@ import org.minimon.system.cross;
 import org.minimon.system.procExec;
 import org.minimon.utils.collections;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
@@ -150,12 +149,12 @@ public class pingProbe
         lastError = "";
         try {
             ping.execute();
-			StreamGrabber results = new StreamGrabber(ping.getStdout(), "", log.getModuleSubLogger("StdOut grabber"));
-			StreamGrabber errors = new StreamGrabber(ping.getStderr(), "<stderr>", log.getModuleSubLogger("StdErr grabber"));
-			ping.waitFor();
-			lastError += errors.getResults() + System.lineSeparator() + results.getResults();
-			lastError += results.getResults();
-		} catch (IOException exc) {
+            StreamGrabber results = new StreamGrabber(ping.getStdout(), "", log.getModuleSubLogger("StdOut grabber"));
+            StreamGrabber errors = new StreamGrabber(ping.getStderr(), "<stderr>", log.getModuleSubLogger("StdErr grabber"));
+            ping.waitFor();
+            lastError += errors.getResults() + System.lineSeparator() + results.getResults();
+            lastError += results.getResults();
+        } catch (IOException exc) {
             lastError = log.appErrorWriter(exc);
             return false;
         } catch (InterruptedException exc) {
