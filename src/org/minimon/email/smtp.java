@@ -428,10 +428,12 @@ public class smtp
                         log.debug("Remove mail from queue");
                         currentMail.remove();
                     }
-                    // Переводим в ожидание
-                    synchronized (this) {
-                        log.debug("Switch to standby");
-                        standby = true;
+                    // Переводим в ожидание, если очередь пуста
+                    if (mailQueue.size() == 0) {
+                        synchronized (this) {
+                            log.debug("Mail queue is empty. Switch to standby");
+                            standby = true;
+                        }
                     }
                 }
             }
