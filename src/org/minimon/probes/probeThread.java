@@ -755,7 +755,7 @@ public class probeThread<T extends probe>
                         // Указываем последнее состояние
                         lastState = STATE_SUCCESS;
                         // Сбавляем буфер, но на меньшее значение, чем
-                        // минимальная пауза (в 3 раза)
+                        // минимальная пауза (в 5 раз)
                         if (messageDelay > messagesUpInterval) {
                             if (debugState) {
                                 log.debug(
@@ -764,11 +764,11 @@ public class probeThread<T extends probe>
                                                 .append("reduce message delay buffer from")
                                                 .append(messageDelay / 1000)
                                                 .append(" s., to")
-                                                .append((messageDelay - (messagesUpInterval / 3)) / 1000)
+                                                .append((messageDelay - (messagesUpInterval / 5)) / 1000)
                                                 .append(" s.")
                                 );
                             }
-                            messageDelay -= (messagesUpInterval / 3);
+                            messageDelay -= (messagesUpInterval / 5);
                         }
                     }
 

@@ -68,6 +68,14 @@ public class databaseProbe
     private helper basicParser = null;
     // Свойства соединения
     private Properties connectionProperties = null;
+    // Текущее соединение
+    private Connection connection = null;
+    // Выражение
+    private Statement stat = null;
+    // Результат выражения
+    private ResultSet result = null;
+    // Число ошибок создания выражений
+    private int statCreateErrCount = 0;
 
     /**
      * Импорт настроек
@@ -209,11 +217,9 @@ public class databaseProbe
      */
     public boolean iteration() {
         log.debug("Iteration with " + URL + " started.");
-        Connection connection;
-        Statement stat = null;
-        ResultSet result = null;
 
-        // Соединяемся
+
+        // Проверяем наличие свойство, если пустые - создаём
         try {
             if (connectionProperties == null) {             // По факту невозможно, но всё же
                 connectionProperties = new Properties();
@@ -222,35 +228,52 @@ public class databaseProbe
         } catch (Exception exc) {
             log.appErrorWriter(exc);
         }
+
+        // При отсутствии соединения пытаемся соединиться
+        if (connection == null) {
+            if (!connect())
+                return false;
+        }
+
+
+        // Создаём выражение
         try {
-            connection = driver.connect(URL, connectionProperties);
-            log.debug("DB " + URL + " connected");
+            stat = connection.createStatement();
         } catch (SQLException exc) {
-            lastError = "Unable connect to database:" + System.lineSeparator()
-                    + exc;
+            lastError = "Unable create statement: " + exc;
+            statCreateErrCount++;
+            forceCloseStatement();
+            // Если более 10 раз не удаётся создать выражение - разрываем соединение
+            if (statCreateErrCount > 10)
+                statCreateErrCount = 0;
+            forceDisconnect();
+            return false;
+        }
+        log.debug("DB " + URL + " statement created");
+
+        // исполняем запрос и сравниваем с результатами (если он есть)
+        if (debug) log.debug("DB " + URL + " try execute statement");
+        try {
+            result = stat.executeQuery(queryRequest);
+        } catch (SQLException exc) {
+            lastError = "Unable execute query \"" + queryResult + "\": " + exc;
+            forceCloseStatement();
             return false;
         }
 
+        // Когда имеется результат
         try {
-            if (connection != null) {
-                // Получаем выражение
-                stat = connection.createStatement();
-                log.debug("DB " + URL + " statement created");
-                // Иначе исполняем кастомный запрос и сравниваем с результатами
-                if (debug) log.debug("DB " + URL + " try execute statement");
-                result = stat.executeQuery(queryRequest);
-                // Когда имеется результат
+            if (result != null) {
                 if (result.next()) {
                     // Если указан собственный ответ
                     if (queryResult != null) {
+                        // То сравниваем с ним
                         if (!result.getString(1).equals(queryResult)) {
                             lastError += "Query result return: " + System.lineSeparator()
                                     + result.getString(1) + System.lineSeparator()
                                     + "But expected: " + System.lineSeparator()
                                     + queryResult;
-                            result.close();
-                            stat.close();
-                            connection.close();
+                            closeStatement();
                             return false;
                         }
                     }
@@ -259,31 +282,99 @@ public class databaseProbe
                     // Если нет результата, но при этом указан ожидаемый ответ
                     if (queryResult != null) {
                         lastError += "Empty query result";
-                        result.close();
-                        stat.close();
-                        connection.close();
+                        closeStatement();
                         return false;
                     }
                 }
-                result.close();
-                stat.close();
-                connection.close();
-                log.debug("DB " + URL + " connection closed");
             }
         } catch (SQLException exc) {
-            // Аварийная обработка ошибки - тест возвращает отрицательный результат
-            // и пытаемся отсоединиться
-            lastError += "Sql check error: " + exc;
-            try {
-                if (result != null) result.close();
-                if (stat != null) stat.close();
-                connection.close();
-            } catch (SQLException ignore) {
-            }
+            lastError = "Error result request: " + exc;
+            forceCloseStatement();
             return false;
         }
 
+        // Закрываем выражение
+        try {
+            closeStatement();
+        } catch (SQLException exc) {
+            lastError = "Unable to close statement: " + exc;
+            forceCloseStatement();
+            return false;
+        }
+        log.debug("DB " + URL + " connection closed");
+
         return true;
+    }
+
+    /**
+     * Выполнения подключения
+     *
+     * @return Успех подключения
+     */
+    private boolean connect() {
+        try {
+            connection = driver.connect(URL, connectionProperties);
+            log.debug("DB " + URL + " connected");
+        } catch (SQLException exc) {
+            lastError = "Unable connect to database:" + System.lineSeparator()
+                    + exc;
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Принужительное разъединение, очищаются
+     * указатели и игнорируются исключения.
+     * Вызывается при ошибке
+     */
+    private void forceDisconnect() {
+        forceCloseStatement();
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException ignore) {
+            }
+            connection = null;
+        }
+    }
+
+    /**
+     * Закрытие и зануление выражений и результатов
+     *
+     * @throws SQLException
+     */
+    private void closeStatement() throws SQLException {
+        if (result != null) {
+            result.close();
+            result = null;
+        }
+        if (stat != null) {
+            stat.close();
+            stat = null;
+        }
+    }
+
+    /**
+     * Приндительное закрытие выражения и результатов
+     * и очистка указателей. Вызывается при сбое.
+     * Игнорирует все исключения
+     */
+    private void forceCloseStatement() {
+        if (result != null) {
+            try {
+                result.close();
+            } catch (SQLException ignore) {
+            }
+            result = null;
+        }
+        if (stat != null) {
+            try {
+                stat.close();
+            } catch (SQLException ignore) {
+            }
+            stat = null;
+        }
     }
 
     //--------------------------------------------------------------
