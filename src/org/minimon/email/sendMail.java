@@ -2,8 +2,6 @@ package org.minimon.email;
 
 import org.minimon.core.logger;
 
-import java.util.LinkedHashMap;
-
 /**
  * Основной интерфейс рассылки сообщений
  */
@@ -15,7 +13,7 @@ public interface sendMail {
      * @param mailHeader Тема сообщения
      * @param mailBody   Тело сообщения
      */
-    public void send(String mailHeader, String mailBody);
+    public abstract void send(String mailHeader, String mailBody);
 
     /**
      * Установка адресатов. Обычно выполняется после получения
@@ -23,19 +21,7 @@ public interface sendMail {
      *
      * @param mailTo Адресаты
      */
-    public void setMailTo(String mailTo);
-
-    /**
-     * Получение экземпляра рассылки с указанными настройками
-     * Экземпляр считается индивидуальным либо 1м по уровню
-     * </p>
-     * Рекомендуется конструктор сделать protected
-     *
-     * @param settings Настройки в виде LinkedHashMap (String)
-     * @param log      Логгер
-     * @return Экземпляр sendMail
-     */
-    public sendMail getInstance(LinkedHashMap<String, String> settings, logger log);
+    public abstract void setMailTo(String mailTo);
 
     /**
      * Получение экземпляра для модулей и тестов
@@ -43,5 +29,5 @@ public interface sendMail {
      * @param log Логгер
      * @return Экземпляр sendMail для модуля
      */
-    public sendMail getInstance(logger log);
+    public sendMail getInstance();
 }

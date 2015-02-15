@@ -32,9 +32,11 @@
 
 package org.minimon.core;
 
+import org.minimon.email.mailx;
+import org.minimon.email.sendMail;
+import org.minimon.email.smtp;
 import org.minimon.probes.probe;
 import org.minimon.probes.probeThread;
-import org.minimon.system.sendMail;
 import org.minimon.utils.collections;
 
 import java.util.Iterator;
@@ -72,7 +74,18 @@ public class controller
         this.settings = settings;
         controllerLogger = settings.getCoreSubLogger("Controller");
         controllerLogger.debug("controller initialised");
-        systemMessages = settings.getMailer();
+        // Создаём мейлер
+        String mailerType = collections.getSectionParameter(
+                settings.getMainSettings(),
+                MAIL_SECTION,
+                MAIL_TYPE_NAME,
+                MAIL_TYPE_DEFAULT
+        );
+        if (mailerType.equalsIgnoreCase("SMTP")) {
+            systemMessages = new smtp(settings.getMainSettings(), settings.getCoreSubLogger("Mail sender"));
+        } else {
+            systemMessages = new mailx(settings.getMainSettings(), settings.getCoreSubLogger("Mail sender"), debugState);
+        }
     }
 
     /**
@@ -204,7 +217,7 @@ public class controller
      */
     synchronized private void startProbe(String probeType, LinkedHashMap<String, LinkedHashMap<String, String>> probeSettings) {
         // Смотрим, имеется ли аналогичный запущенный процесс
-        String probeName = collections.searchKeyInSubIgnoreCase(probeSettings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]");
+        String probeName = collections.getSectionParameter(probeSettings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]");
         for (probeThread<? extends probe> item : currentProbes) {
             if (item.getName().equals(probeName)) {
                 controllerLogger.error("Probe " + probeName + " already run");
@@ -214,7 +227,7 @@ public class controller
 
         // Определяем, активен ли тест (Enable)
         // Так же определяем самостоятельно, активен ли тест
-        String activityProbe = collections.searchKeyInSubIgnoreCase(probeSettings, MAIN_SECTION, PROBE_ENABLE_NAME, PROBE_ENABLE_DEFAULT);
+        String activityProbe = collections.getSectionParameter(probeSettings, MAIN_SECTION, PROBE_ENABLE_NAME, PROBE_ENABLE_DEFAULT);
         if (!(activityProbe.equalsIgnoreCase("yes") || activityProbe.equalsIgnoreCase("enable") || Boolean.parseBoolean(activityProbe))) {
             controllerLogger.info("Probe " + probeName + " disabled, edit [" + MAIN_SECTION + "] -> " + PROBE_ENABLE_NAME + " parameter");
             return;
@@ -239,6 +252,7 @@ public class controller
                     probeSettings,
                     probeType,
                     settings.getCoreSubLogger("New probe type " + probeType),
+                    systemMessages.getInstance(),
                     debug
             );
             // Запускаем по готовности
@@ -250,7 +264,7 @@ public class controller
         } catch (ClassNotFoundException exc) {
             controllerLogger.error(
                     "Unable to load probe "
-                            + collections.searchKeyInSubIgnoreCase(probeSettings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]")
+                            + collections.getSectionParameter(probeSettings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]")
                             + " as probe type "
                             + probeType
                             + ". May be this type can't set in configuration file and will not loaded. See section [main], parameter \"Probes\" in main config"

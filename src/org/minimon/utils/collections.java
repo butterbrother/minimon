@@ -100,12 +100,29 @@ public class collections {
      * @return Строка либо null, если не найдено
      */
 	@Nullable
-    public static String searchKeyInSubIgnoreCase(LinkedHashMap<String, String> subMap, String searchPhrase) {
+    public static String getParameter(LinkedHashMap<String, String> subMap, String searchPhrase) {
         for (String item : subMap.keySet()) {
             if (item.equalsIgnoreCase(searchPhrase))
                 return subMap.get(item);
         }
         return null;
+    }
+
+    /**
+     * Поиск ключа в секции (вложенная подколлекция) без учёта регистра
+     * Возвращает строку найденного ключа
+     * @param subMap        Вложенная коллекция (секция)
+     * @param searchKey     Искомый ключ
+     * @param defaultValue  Значение по-умолчанию
+     * @return Значение по найденному ключу, либо
+     * значение по-умолчанию в случае, если ключ не найден
+     */
+    public static String getParameter(LinkedHashMap<String, String> subMap, String searchKey, String defaultValue) {
+        for (String item : subMap.keySet()) {
+            if (item.equalsIgnoreCase(searchKey))
+                return subMap.get(item);
+        }
+        return defaultValue;
     }
 
     /**
@@ -118,7 +135,7 @@ public class collections {
      * @return Значение ключа либо null
      */
 	@Nullable
-    public static String searchKeyInSubIgnoreCase(LinkedHashMap<String, LinkedHashMap<String, String>> comboMap, String sectionName, String keyName) {
+    public static String getSectionParameter(LinkedHashMap<String, LinkedHashMap<String, String>> comboMap, String sectionName, String keyName) {
         for (String item : comboMap.keySet()) {
             if (item.equalsIgnoreCase(sectionName)) {
                 for (String subItem : comboMap.get(item).keySet()) {
@@ -140,7 +157,7 @@ public class collections {
      * @param defaultValue значение по-умолчанию
      * @return Значение ключа либо значение по-умолчанию
      */
-    public static String searchKeyInSubIgnoreCase(LinkedHashMap<String, LinkedHashMap<String, String>> comboMap, String sectionName, String keyName, String defaultValue) {
+    public static String getSectionParameter(LinkedHashMap<String, LinkedHashMap<String, String>> comboMap, String sectionName, String keyName, String defaultValue) {
         for (String item : comboMap.keySet()) {
             if (item.equalsIgnoreCase(sectionName)) {
                 for (String subItem : comboMap.get(item).keySet()) {
@@ -185,5 +202,50 @@ public class collections {
             }
         }
         return retValue;
+    }
+
+    /**
+     * Получение булевого параметра из секции без учёта регистра
+     * Кроме ключевого слова true реакция идёт и на "yes", и на "enable"
+     *
+     * @param comboMap            Настройки
+     * @param sectionName         Имя секции
+     * @param booleanKeyName      Имя ключа, содержащего булево значение
+     * @param booleanDefaultValue Значение по-умолчанию, может быть null
+     * @return Булево значение
+     */
+    public static boolean getSectionBooleanParameter(LinkedHashMap<String, LinkedHashMap<String, String>> comboMap, String sectionName, String booleanKeyName, @Nullable String booleanDefaultValue) {
+        String buffer;
+        if (booleanDefaultValue != null) {
+            buffer = getSectionParameter(comboMap, sectionName, booleanKeyName, booleanDefaultValue);
+        } else {
+            buffer = getSectionParameter(comboMap, sectionName, booleanKeyName, "FALSE");
+        }
+        return (Boolean.parseBoolean(buffer) || buffer.toLowerCase().contains("yes") || buffer.toLowerCase().contains("enable"));
+    }
+
+    /**
+     * Получение целочисленного параметра int
+     *
+     * @param comboMap        Настройки
+     * @param sectionName     Имя секции
+     * @param intKeyName      Имя ключа, содержащего int
+     * @param intDefaultValue Значение по-умолчанию, может быть null
+     * @return Целочисленное значение
+     * @throws NumberFormatException Ошибка преобразования в int
+     */
+    public static int getSectionIntegerParameter(LinkedHashMap<String, LinkedHashMap<String, String>> comboMap, String sectionName, String intKeyName, @Nullable String intDefaultValue)
+            throws NumberFormatException {
+        int returnValue;
+        try {
+            if (intDefaultValue != null) {
+                returnValue = Integer.parseInt(collections.getSectionParameter(comboMap, sectionName, intKeyName, intDefaultValue));
+            } else {
+                returnValue = Integer.parseInt(collections.getSectionParameter(comboMap, sectionName, intKeyName, "0"));
+            }
+        } catch (NumberFormatException exc) {
+            throw new NumberFormatException("Unable to parse number in parameter [" + sectionName + "]->" + intKeyName);
+        }
+        return returnValue;
     }
 }

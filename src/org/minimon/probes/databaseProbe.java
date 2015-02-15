@@ -105,20 +105,20 @@ public class databaseProbe
         // Секция [Main]
         // Trace to = хост трассировки
         String PROBE_DB_TRACE = "Trace to";
-        traceURL = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_DB_TRACE);
+        traceURL = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_DB_TRACE);
         // Секция [Database]
         String PROBE_DB_SECTION_NAME = "Database";
         // Driver = строка драйвера
         String PROBE_DB_DRIVER = "Driver";
-        String JDBCDriver = collections.searchKeyInSubIgnoreCase(settings, PROBE_DB_SECTION_NAME, PROBE_DB_DRIVER);
+        String JDBCDriver = collections.getSectionParameter(settings, PROBE_DB_SECTION_NAME, PROBE_DB_DRIVER);
         // URL = JDBC Url
         String PROBE_DB_URL = "Url";
-        URL = collections.searchKeyInSubIgnoreCase(settings, PROBE_DB_SECTION_NAME, PROBE_DB_URL);
+        URL = collections.getSectionParameter(settings, PROBE_DB_SECTION_NAME, PROBE_DB_URL);
         // Query = Проверочный запрос
         String PROBE_DB_QUERY = "Query";
-        queryRequest = collections.searchKeyInSubIgnoreCase(settings, PROBE_DB_SECTION_NAME, PROBE_DB_QUERY);
+        queryRequest = collections.getSectionParameter(settings, PROBE_DB_SECTION_NAME, PROBE_DB_QUERY);
         // Сравниваемый ответ
-        queryResult = collections.searchKeyInSubIgnoreCase(settings, PROBE_DB_SECTION_NAME, "Result");
+        queryResult = collections.getSectionParameter(settings, PROBE_DB_SECTION_NAME, "Result");
         // Секция [Properties]
         String PROBE_DB_PROPERTIES_NAME = "Properties";
         connectionProperties = collections.sectionToProperties(settings, PROBE_DB_PROPERTIES_NAME);
@@ -164,14 +164,14 @@ public class databaseProbe
         // Парсим и корректируем
         basicParser.parseBasical(
                 // Ограничения базовых параметров
-                30,      // Минимально допустимая пауза между проверками
+                60,      // Минимально допустимая пауза между проверками
                 86400,  // Максимально допустимая пауза между проверками
                 false,   // Необходимость работы фильтра случайных ошибок с точки зрения теста
                 1,      // Минимально допустимая пауза фильтра
                 60,     // Максимально допустимая пауза фильтра
                 2,      // Минимально допустимое число итераций фильтра
                 100,    // Максимально допустимое число итераций фильтра
-                0,      // Минимально допустимое увеличение паузы в случае провала
+                30,      // Минимально допустимое увеличение паузы в случае провала
                 3600,   // Максимально допустимое увеличение паузы в случае провала
                 true,   // Необходимость удвоения интервала увеличения в случае провала
                 (traceURL != null)    // Необходимость ведения трассировки

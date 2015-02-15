@@ -288,9 +288,9 @@ public class helper
         long returnValue;
         try {
             if (longDefaultValue != null) {
-                returnValue = Long.parseLong(collections.searchKeyInSubIgnoreCase(parameters, sectionName, longKeyName, longDefaultValue));
+                returnValue = Long.parseLong(collections.getSectionParameter(parameters, sectionName, longKeyName, longDefaultValue));
             } else {
-                returnValue = Long.parseLong(collections.searchKeyInSubIgnoreCase(parameters, sectionName, longKeyName, "0"));
+                returnValue = Long.parseLong(collections.getSectionParameter(parameters, sectionName, longKeyName, "0"));
             }
         } catch (NumberFormatException exc) {
             returnValue = 0;
@@ -311,12 +311,6 @@ public class helper
      * @return Значение типа boolean
      */
     private boolean parseBoolean(String sectionName, String booleanKeyName, String booleanDefaultValue) {
-        String buffer;
-        if (booleanDefaultValue != null) {
-            buffer = collections.searchKeyInSubIgnoreCase(parameters, sectionName, booleanKeyName, booleanDefaultValue);
-        } else {
-            buffer = collections.searchKeyInSubIgnoreCase(parameters, sectionName, booleanKeyName, "FALSE");
-        }
-        return (Boolean.parseBoolean(buffer) || buffer.toLowerCase().contains("yes") || buffer.toLowerCase().contains("enable"));
+        return collections.getSectionBooleanParameter(parameters, sectionName, booleanKeyName, booleanDefaultValue);
     }
 }

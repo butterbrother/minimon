@@ -35,10 +35,10 @@ package org.minimon.probes;
 import com.sun.istack.internal.NotNull;
 import org.minimon.core.logger;
 import org.minimon.core.staticValues;
+import org.minimon.email.sendMail;
 import org.minimon.system.StreamGrabber;
 import org.minimon.system.cross;
 import org.minimon.system.procExec;
-import org.minimon.system.sendMail;
 import org.minimon.utils.collections;
 
 import java.io.IOException;
@@ -126,10 +126,11 @@ public class probeThread<T extends probe>
             @NotNull LinkedHashMap<String, LinkedHashMap<String, String>> settings,
             @NotNull String probeType,
             @NotNull logger log,
+            @NotNull sendMail mail,
             boolean debugState
     ) {
         // Определяем имя самостоятельно
-        probeName = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]");
+        probeName = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_NAME_KEY, "[Unknown]");
 
         this.probeType = probeType;
         this.probeItem = probeItem;
@@ -151,9 +152,10 @@ public class probeThread<T extends probe>
                 }
             }
 
-            // Создаём e-mail-ер
-            String mailRecipients = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, MAIL_TO_NAME, MAIL_TO_DEFAULT);
-            mail = new sendMail(mailRecipients, log.getModuleSubLogger("Mail system"), debugState);
+            // Получаем и переименовываем e-mail-ер
+            String mailRecipients = collections.getSectionParameter(settings, MAIN_SECTION, MAIL_TO_NAME, MAIL_TO_DEFAULT);
+            this.mail = mail;
+            this.mail.setMailTo(mailRecipients);
 
             // Получаем настройки
             helper probeHelper = probeItem.getBasicalParseHelper();
@@ -177,9 +179,8 @@ public class probeThread<T extends probe>
             }
 
             // Проверяем, необходимо ли исполнять внешние команды при поступлении событий
-            String externalWarningCommand = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_WARNING);
-            String externalAlertCommand = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_ALERT);
-            String doWait = collections.searchKeyInSubIgnoreCase(settings, EXTERNAL_EXEC_NAME, EXTERNAL_DO_WAIT, "Yes");
+            String externalWarningCommand = collections.getSectionParameter(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_WARNING);
+            String externalAlertCommand = collections.getSectionParameter(settings, EXTERNAL_EXEC_NAME, EXTERNAL_EXEC_ALERT);
 
             // Получаем паузу между сообщениями о провалах
             messagesUpInterval = (
@@ -200,24 +201,24 @@ public class probeThread<T extends probe>
                 externalWarningApplication = buildExternalExecutor(externalWarningCommand);
             if (externalAlertCommand != null)
                 externalAlertApplication = buildExternalExecutor(externalAlertCommand);
-            needWaitExternalApplication = (Boolean.parseBoolean(doWait) || doWait.toLowerCase().contains("yes") || doWait.toLowerCase().contains("enable"));
+            needWaitExternalApplication = collections.getSectionBooleanParameter(settings, EXTERNAL_EXEC_NAME, EXTERNAL_DO_WAIT, "yes");
 
             // Записываем в лог информацию о тесте
-            log.info(
-                    "Probe: \"" + probeName + "\", type: \"" + probeType + "\"" + System.lineSeparator()
-                            + "Parameters:" + System.lineSeparator()
-                            + "-- Mail recipients: " + (mailRecipients != null ? mailRecipients : "none") + System.lineSeparator()
-                            + "-- Checking pause (delay): " + (checkDelay / 1000) + " s." + System.lineSeparator()
-                            + "-- Fail filter: " + (needFailFilter ? "enabled" : "disabled") + System.lineSeparator()
-                            + "-- Fail filter count: " + (failFilterCount) + System.lineSeparator()
-                            + "-- Fail filter minimal success count: " + (failFilterSuccessCount) + System.lineSeparator()
-                            + "-- Fail filter iterations delay: " + (failFilterDelay / 1000) + " s." + System.lineSeparator()
-                            + "-- Fail filter interval up: " + (failUpInterval / 1000) + " s." + System.lineSeparator()
-                            + "-- Fail filter need double interval: " + (doubleFailIntervals ? "enabled" : "disabled") + System.lineSeparator()
-                            + "-- Trace to network host: " + (needTraceRoute ? "enabled" : "disabled") + System.lineSeparator()
-                            + "-- External command on warning: " + (externalWarningCommand != null ? externalWarningCommand : "not use") + System.lineSeparator()
-                            + "-- External command on alert: " + (externalAlertCommand != null ? externalAlertCommand : "not use")
-                            + "-- Message up delay: " + (messagesUpInterval / 1000) + " s."
+            log.info(new StringBuilder()
+                            .append("Probe: \"").append(probeName).append("\", type: \"").append(probeType).append("\"").append(System.lineSeparator())
+                            .append("Parameters:").append(System.lineSeparator())
+                            .append("-- Mail recipients: ").append(mailRecipients != null ? mailRecipients : "none").append(System.lineSeparator())
+                            .append("-- Checking pause (delay): ").append(checkDelay / 1000).append(" s.").append(System.lineSeparator())
+                            .append("-- Fail filter: ").append(needFailFilter ? "enabled" : "disabled").append(System.lineSeparator())
+                            .append("-- Fail filter count: ").append(failFilterCount).append(System.lineSeparator())
+                            .append("-- Fail filter minimal success count: ").append(failFilterSuccessCount).append(System.lineSeparator())
+                            .append("-- Fail filter iterations delay: ").append(failFilterDelay / 1000).append(" s.").append(System.lineSeparator())
+                            .append("-- Fail filter interval up: ").append(failUpInterval / 1000).append(" s.").append(System.lineSeparator())
+                            .append("-- Fail filter need double interval: ").append(doubleFailIntervals ? "enabled" : "disabled").append(System.lineSeparator())
+                            .append("-- Trace to network host: ").append(needTraceRoute ? "enabled" : "disabled").append(System.lineSeparator())
+                            .append("-- External command on warning: ").append(externalWarningCommand != null ? externalWarningCommand : "not use").append(System.lineSeparator())
+                            .append("-- External command on alert: ").append(externalAlertCommand != null ? externalAlertCommand : "not use").append(System.lineSeparator())
+                            .append("-- Message up delay: ").append(messagesUpInterval / 1000).append(" s.")
             );
 
 
@@ -409,7 +410,7 @@ public class probeThread<T extends probe>
                     StreamGrabber executeOutput = new StreamGrabber(executor.getStdout(), "", log.getModuleSubLogger("StdOut grabber"));
                     executor.waitFor();
 
-                    returnValue.append(name).append(" result:").append(System.lineSeparator())
+                    returnValue.append(name).append(" result:").append(System.lineSeparator()).append(System.lineSeparator())
                             .append(executeErrors.getResults()).append(System.lineSeparator())
                             .append(executeOutput.getResults()).append(System.lineSeparator());
                 }
@@ -533,6 +534,10 @@ public class probeThread<T extends probe>
         if (lastMessageDate == 0) {
             lastMessageDate = Calendar.getInstance().getTimeInMillis();
             messageDelay = messagesUpInterval;
+            if (debugState) {
+                log.debug("Message newer be send, sending");
+                log.debug("Now message delay: " + (messageDelay / 1000) + " s.");
+            }
             return true;
         }
 
@@ -541,22 +546,46 @@ public class probeThread<T extends probe>
 
         // Если дата отправки превышает буфер паузы - так же отправляем
         if (currentDateMls - lastMessageDate > messageDelay) {
+            if (debugState) {
+                log.debug(new StringBuilder().append("Last message send older that message buffer delay,")
+                        .append(" send. Current date - last sent date: ").append((currentDateMls - lastMessageDate) / 1000)
+                        .append(" s., message sent buffer delay: ").append(messageDelay / 1000).append(" s."));
+            }
             // Если буфер больше, чем минимальная пауза между сообщениями,
             // но при этом разница между ними не превышает минимальную паузу,
             // то уменьшаем буфер
-            if (messageDelay > messagesUpInterval && (messageDelay - messagesUpInterval) >= messagesUpInterval)
+            if (messageDelay > messagesUpInterval && (messageDelay - messagesUpInterval) >= messagesUpInterval) {
+                if (debugState) {
+                    log.debug(new StringBuilder().append("Message buffer delay larger that message interval, ")
+                            .append("buffer: ").append(messageDelay / 1000).append(" s., ")
+                            .append("message interval: ").append(messagesUpInterval / 1000).append(" s.. ")
+                            .append("Reduce buffer: ").append((messageDelay - messagesUpInterval) / 1000).append(" s."));
+                }
                 messageDelay -= messagesUpInterval;
+            }
             lastMessageDate = Calendar.getInstance().getTimeInMillis();
+            log.debug("Allowing sent");
             return true;
         }
 
         // Разница в текущем времени и паузе буфера
         long bufferDelay = currentDateMls - messageDelay;
+        if (debugState) {
+            Calendar eventsAfter = Calendar.getInstance();
+            eventsAfter.setTimeInMillis(bufferDelay);
+            log.debug(
+                    new Formatter().format(
+                            "Now watch events after: %tY-%<tm-%<td %<tH:%<tM:%<tS.%<tL",
+                            eventsAfter
+                    )
+            );
+        }
 
         // Если тревога - анализируем историю
         // Если в прошлые разы была иная тревога - наращиваем паузу,
         // Иначе - сразу отправляем
         if (lastState == STATE_ALERT) {
+            log.debug("Last state is alert");
             // Разница в текущем времени и времени события
             long histItemDelay;
             // Смотрим в историю за время буфера
@@ -567,6 +596,15 @@ public class probeThread<T extends probe>
                 if (histItemDelay <= bufferDelay) {
                     // Если была иная тревога за время буферной паузы - наращиваем время
                     if (histItem.getValue() == STATE_ALERT) {
+                        if (debugState) {
+                            log.debug(new Formatter().format(
+                                    "Detected last alert at %tY-%<tm-%<td %<tH:%<tM:%<tS.%<tL",
+                                    histItem.getKey()
+                            ));
+                            log.debug(new StringBuilder().append("Not allowing sent, up interval from ")
+                                    .append(messageDelay / 1000).append(" s. to")
+                                    .append((messageDelay + messagesUpInterval) / 1000).append(" s."));
+                        }
                         messageDelay += messagesUpInterval;
                         return false;
                     }
@@ -574,6 +612,13 @@ public class probeThread<T extends probe>
             }
             // Не нашли тревог за время буферной паузы, отправляем немедленно и
             // сбрасываем буфер в умолчания
+            if (debugState) {
+                log.debug(new StringBuilder()
+                                .append("Alert at last buffer delay not found, send immediate and reset buffer time from")
+                                .append(messageDelay / 1000).append(" s.")
+                                .append(" to ").append(messagesUpInterval / 1000).append(" s.")
+                );
+            }
             messageDelay = messagesUpInterval;
             lastMessageDate = Calendar.getInstance().getTimeInMillis();
             return true;
@@ -581,6 +626,13 @@ public class probeThread<T extends probe>
 
         // Здесь останутся только повторы предупреждений из диапазона буферной паузы
         // либо ложные сообщения, запрещаем и наращиваем буферную паузу
+        if (debugState) {
+            log.debug(new StringBuilder()
+                            .append("It is repeat of warning or another state. Ignore. ")
+                            .append("Up message delay buffer from ").append(messageDelay / 1000).append(" s. ")
+                            .append("to ").append((messageDelay + messagesUpInterval) / 1000).append(" s.")
+            );
+        }
         messageDelay += messagesUpInterval;
         return false;
     }
@@ -705,6 +757,17 @@ public class probeThread<T extends probe>
                         // Сбавляем буфер, но на меньшее значение, чем
                         // минимальная пауза (в 3 раза)
                         if (messageDelay > messagesUpInterval) {
+                            if (debugState) {
+                                log.debug(
+                                        new StringBuilder()
+                                                .append("Last state - success,")
+                                                .append("reduce message delay buffer from")
+                                                .append(messageDelay / 1000)
+                                                .append(" s., to")
+                                                .append((messageDelay - (messagesUpInterval / 3)) / 1000)
+                                                .append(" s.")
+                                );
+                            }
                             messageDelay -= (messagesUpInterval / 3);
                         }
                     }

@@ -109,7 +109,7 @@ public class procCheckProbe
         // Секция [Main]
         // Process = Имя процесса
         String PROBE_PROC_CHECK = "Process";
-        procCheck = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_PROC_CHECK);
+        procCheck = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_PROC_CHECK);
 
         // Только один параметр, имя процесса. Обязателен
         if (procCheck == null) {

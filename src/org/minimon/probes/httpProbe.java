@@ -121,13 +121,13 @@ public class httpProbe
 
         // Получаем параметры
         String PROBE_URL = "URL";
-        String Url = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_URL);
+        String Url = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_URL);
         String PROBE_LOGIN = "Login";
-        String Login = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_LOGIN);
+        String Login = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_LOGIN);
         String PROBE_PASSWORD = "Password";
-        String Password = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_PASSWORD);
+        String Password = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_PASSWORD);
         String PROBE_SEARCH_PHRASE = "Search";
-        phrase = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_SEARCH_PHRASE);
+        phrase = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_SEARCH_PHRASE);
 
         // Проверяем наличие необходимых
         if (Url == null) {

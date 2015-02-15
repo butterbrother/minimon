@@ -125,15 +125,13 @@ public interface staticValues {
     //----
     // [main]
     String MAIN_SECTION = "Main";
-    // e-mail адреса для уведомлений администраторов системы
-    String MAIL_TO_NAME = "Mail to";
-    String MAIL_TO_DEFAULT = "";
     // Названия активных/доступных модулей теста
     String ENABLED_MODULES_NAME = "Probes";
     String ENABLED_MODULES_DEFAULT = "databaseProbe freeSpaceProbe httpProbe pingProbe procCheckProbe";
     // Файловый сокет
     String SOCKET_PATH_NAME = "Socket";
     String SOCKET_PATH_DEFAULT = "minimon.soc";
+
     // [log]
     String LOG_SECTION = "Log";
     // Путь к логу
@@ -142,6 +140,34 @@ public interface staticValues {
     // Активировать сжатие
     String LOG_ENABLE_COMPRESSION_NAME = "Compression";
     String LOG_ENABLE_COMPRESSION_DEFAULT = "true";
+
+    // [mail]
+    // Имя секции
+    String MAIL_SECTION = "Mail";
+    // Тип отправки
+    String MAIL_TYPE_NAME = "Type";
+    String MAIL_TYPE_DEFAULT = "SMTP";
+    // Параметры соединения
+    // Сервер
+    String MAIL_SERVER = "Server";
+    // Логин и пароль
+    String MAIL_LOGIN = "Login";
+    String MAIL_PASSWORD = "Password";
+    // Отправитель
+    String MAIL_FROM = "From";
+    // SSL
+    String MAIL_SSL_ENABLE = "SSL";
+    // Порт
+    String MAIL_PORT = "Port";
+    // Таймаут соединения, подключения и записи
+    String MAIL_TIMEOUT = "Timeout";
+    String MAIL_TIMEOUT_DEFAULT = "60";
+    // TLS
+    String MAIL_TLS_ENABLE = "TLS";
+    // e-mail адреса для уведомлений администраторов системы
+    String MAIL_TO_NAME = "Mail to";
+    String MAIL_TO_DEFAULT = "";
+
     // [location]
     String PROBES_SETTINGS_PATH_SECTION = "Location";
 
@@ -185,6 +211,7 @@ public interface staticValues {
     // Увеличение паузы в случае постоянных предупреждений/провалов
     String PROBE_MESSAGES_DELAY_UP_NAME = "Messages Delay";
     String PROBE_MESSAGES_DELAY_UP_DEFAULT = "300";
+
     // [external]
     // исполнение внешних приложений
     // Имя

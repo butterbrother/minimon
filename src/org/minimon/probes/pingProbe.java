@@ -106,7 +106,7 @@ public class pingProbe
                 true    // Необходимость ведения трассировки
         );
         // Параметр URL
-        URL = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, "Host");
+        URL = collections.getSectionParameter(settings, MAIN_SECTION, "Host");
         if (URL == null) {
             lastError = "Empty URL or IP address";
             return false;

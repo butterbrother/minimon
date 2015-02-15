@@ -107,7 +107,7 @@ public class freeSpaceProbe
         String PROBE_FREE_SPACE_PARTITION = "Partition";
         // Minimum = минимальное пространство, указывается в настройках в килобайтах
         String PROBE_FREE_SPACE_MINIMUM = "Minimum";
-        String partitionName = collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_FREE_SPACE_PARTITION);
+        String partitionName = collections.getSectionParameter(settings, MAIN_SECTION, PROBE_FREE_SPACE_PARTITION);
         minimalFreeSpace = 1024 * basicParser.getLongParamValue(
                 MAIN_SECTION,
                 PROBE_FREE_SPACE_MINIMUM,
@@ -123,7 +123,7 @@ public class freeSpaceProbe
         }
 
         // Минимальное свободное пространство - желательный, отсутствие не критично
-        if (collections.searchKeyInSubIgnoreCase(settings, MAIN_SECTION, PROBE_FREE_SPACE_MINIMUM) == null) {
+        if (collections.getSectionParameter(settings, MAIN_SECTION, PROBE_FREE_SPACE_MINIMUM) == null) {
             log.warning("Minimal free space not set, use default - 512 Kb. It can be set in section [" + MAIN_SECTION + "], parameter \"" + PROBE_FREE_SPACE_MINIMUM + "\"");
         }
 

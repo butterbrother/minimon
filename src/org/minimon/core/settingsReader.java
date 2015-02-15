@@ -2,7 +2,6 @@ package org.minimon.core;
 
 import com.sun.istack.internal.Nullable;
 import org.ini4j.Ini;
-import org.minimon.system.sendMail;
 import org.minimon.utils.collections;
 
 import java.io.File;
@@ -20,13 +19,13 @@ public class settingsReader
         implements staticValues {
     // Имя конфигурационного файла
     private final String configFileName;
+    // Настройки
+    LinkedHashMap<String, LinkedHashMap<String, String>> mainSettings;
     // Логгер. Получаем после инициализации базовых настроек
     // Изначально отсутствует, пишем в stdout
     private logger coreLogger = null;
     // Логгер считывателя настроек
     private logger settingsReaderLogger = null;
-    // e-mail-ер
-    private sendMail mailer = null;
     // Имена доступных модулей
     private LinkedList<String> enabledModules = null;
     // Файловый сокет
@@ -64,10 +63,10 @@ public class settingsReader
         }
 
         // Пытаемся найти базовые настройки
-        LinkedHashMap<String, LinkedHashMap<String, String>> mainSettings = collections.IniToLinkedHashMap(mainConfig);
+        mainSettings = collections.IniToLinkedHashMap(mainConfig);
 
         // 1. Логгер
-        String coreLoggerFileName = collections.searchKeyInSubIgnoreCase(mainSettings, LOG_SECTION, LOG_PATH_NAME);
+        String coreLoggerFileName = collections.getSectionParameter(mainSettings, LOG_SECTION, LOG_PATH_NAME);
         if (coreLoggerFileName == null) {
             // Если не указан - берём по-умолчанию относительно исполнимого файла
             File logFile = new File(init.getJarFileLocation(), LOG_PATH_DEFAULT);
@@ -84,16 +83,11 @@ public class settingsReader
                         + "Converted settings: " + mainSettings.toString()
         );
 
-        // 2. Адресаты сообщений от системы
-        String coreMainRecipients = collections.searchKeyInSubIgnoreCase(mainSettings, MAIN_SECTION, MAIL_TO_NAME, MAIL_TO_DEFAULT);
-        // Создаём mail-er
-        mailer = new sendMail(coreMainRecipients, coreLogger.getModuleSubLogger(CORE_MAILER), debugState);
-
         // 3. Имена модулей тестов
-        enabledModules = parseRAWProbeTypes(collections.searchKeyInSubIgnoreCase(mainSettings, MAIN_SECTION, ENABLED_MODULES_NAME, ENABLED_MODULES_DEFAULT));
+        enabledModules = parseRAWProbeTypes(collections.getSectionParameter(mainSettings, MAIN_SECTION, ENABLED_MODULES_NAME, ENABLED_MODULES_DEFAULT));
 
         // 4. Файловый сокет
-        socketFileName = collections.searchKeyInSubIgnoreCase(mainSettings, MAIN_SECTION, SOCKET_PATH_NAME);
+        socketFileName = collections.getSectionParameter(mainSettings, MAIN_SECTION, SOCKET_PATH_NAME);
         if (socketFileName == null) {
             File sockFile = new File(init.getJarFileLocation(), SOCKET_PATH_DEFAULT);
             socketFileName = sockFile.getAbsolutePath();
@@ -126,7 +120,7 @@ public class settingsReader
                 LinkedHashMap<String, LinkedHashMap<String, String>> convertedConfig = collections.IniToLinkedHashMap(probeConfig);
 
                 // Выполняем поиск имени теста, если нет - возвращаем
-                String nameFromIni = collections.searchKeyInSubIgnoreCase(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY);
+                String nameFromIni = collections.getSectionParameter(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY);
                 if ((nameFromIni != null && nameFromIni.equalsIgnoreCase(probeName)) || probeName.equalsIgnoreCase(probeInfo.getName())) {
                     settings = convertedConfig;
 
@@ -233,7 +227,7 @@ public class settingsReader
         // иначе - расположение по-умолчанию - относительная директория+директория с именем теста
         String locationPath = findingProbeType;
         if (collections.searchKeyInComboIgnoreCase(mainSettings, PROBES_SETTINGS_PATH_SECTION) != null) {
-            locationPath = collections.searchKeyInSubIgnoreCase(mainSettings, PROBES_SETTINGS_PATH_SECTION, findingProbeType, locationPath);
+            locationPath = collections.getSectionParameter(mainSettings, PROBES_SETTINGS_PATH_SECTION, findingProbeType, locationPath);
         }
         settingsReaderLogger.debug("Location path is " + locationPath);
 
@@ -284,7 +278,7 @@ public class settingsReader
                 Ini probeConfig = new Ini(new InputStreamReader(new FileInputStream(probeInfo), "UTF-8"));
                 LinkedHashMap<String, LinkedHashMap<String, String>> convertedConfig = collections.IniToLinkedHashMap(probeConfig);
                 // Выполняем поиск имени теста, если нет - возвращаем
-                values.add(collections.searchKeyInSubIgnoreCase(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY, probeInfo.getName()));
+                values.add(collections.getSectionParameter(convertedConfig, MAIN_SECTION, PROBE_NAME_KEY, probeInfo.getName()));
             } catch (Exception ignore) {
                 settingsReaderLogger.debug(ignore);
             }
@@ -318,20 +312,20 @@ public class settingsReader
     }
 
     /**
-     * Возвращает e-mail-ер
-     *
-     * @return e-mail-ер
-     */
-    public sendMail getMailer() {
-        return mailer;
-    }
-
-    /**
      * Возвращает имя файлового сокета
      *
      * @return Строковое имя файлового сокета из настроек
      */
     public String getSocketFileName() {
         return socketFileName;
+    }
+
+    /**
+     * Возвращает основной файл настроек
+     *
+     * @return Файл настроек (скорвертированный ini)
+     */
+    public LinkedHashMap<String, LinkedHashMap<String, String>> getMainSettings() {
+        return mainSettings;
     }
 }
