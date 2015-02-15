@@ -296,12 +296,12 @@ public class databaseProbe
         // Закрываем выражение
         try {
             closeStatement();
+            log.debug("DB " + URL + " statement closed");
         } catch (SQLException exc) {
             lastError = "Unable to close statement: " + exc;
             forceCloseStatement();
             return false;
         }
-        log.debug("DB " + URL + " connection closed");
 
         return true;
     }
@@ -329,6 +329,7 @@ public class databaseProbe
      * Вызывается при ошибке
      */
     private void forceDisconnect() {
+        log.debug("Force disconnection");
         forceCloseStatement();
         if (connection != null) {
             try {
@@ -361,6 +362,7 @@ public class databaseProbe
      * Игнорирует все исключения
      */
     private void forceCloseStatement() {
+        log.debug("Force close statement");
         if (result != null) {
             try {
                 result.close();
