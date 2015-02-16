@@ -148,8 +148,8 @@ public class smtp
     @Override
     public void setMailTo(String mailTo) {
         // Сбрасываем текущих адресатов
-        this.mailTo = new LinkedList<>();
-        // Заполняем из параметра
+		this.mailTo.clear();
+		// Заполняем из параметра
         StringTokenizer RAWMailTo = new StringTokenizer(mailTo, " ,;");
         while (RAWMailTo.hasMoreElements())
             this.mailTo.add(RAWMailTo.nextToken());

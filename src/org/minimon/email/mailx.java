@@ -9,6 +9,7 @@ import org.minimon.utils.collections;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 /**
@@ -18,8 +19,8 @@ public class mailx
         implements sendMail, staticValues {
 
     // Адресаты
-    private String mailTo = "";
-    // Логгер
+	private LinkedList<String> mailTo = new LinkedList<>();
+	// Логгер
     private logger log;
     // Ссылка на мейлер 1го уровня
     private mailx rootMailer = null;
@@ -39,7 +40,6 @@ public class mailx
         this.log = log;
         // Разбираем параметры
         // Интересен только mail to
-        StringBuilder mailTo = new StringBuilder();
         StringTokenizer RAWmailTo = new StringTokenizer(
                 collections.getSectionParameter(
                         settings,
@@ -50,9 +50,8 @@ public class mailx
                 " ,;"
         );
         while (RAWmailTo.hasMoreElements())
-            mailTo.append(RAWmailTo.nextToken()).append(" ");
-        this.mailTo = mailTo.toString().trim();
-        // Статус отладки
+			mailTo.add(RAWmailTo.nextToken());
+		// Статус отладки
         this.debug = debugState;
     }
 
@@ -66,61 +65,78 @@ public class mailx
         this.rootMailer = coreMailX;
     }
 
-    /**
-     * Отправка сообщения
-     *
+	/**
+	 * Отправка простого сообщения
+	 *
      * @param mailHeader Тема сообщения
      * @param mailBody   Тело сообщения
      */
     @Override
     public void send(String mailHeader, String mailBody) {
-        // Если это мейлер модуля, передаём сообщение выше
-        if (rootMailer != null) {
-            rootMailer.send(mailTo, mailHeader, mailBody);
-        } else {
-            // Иначе просто вызываем свою же функцию
-            send(mailTo, mailHeader, mailBody);
-        }
+		fullMail eMail = new fullMail(mailTo, mailHeader, mailBody);
+		if (this.rootMailer == null) {
+			// Если это мейлер 1го уровня - добавляем сообщение в кучу
+			if (mailTo.size() != 0) send(eMail);
+		} else {
+			// Иначе передаём выше по уровню
+			if (mailTo.size() != 0) rootMailer.send(eMail);
+		}
     }
 
     /**
      * Непосредственная отправка сообщения
      *
-     * @param mailTo     Получатели
-     * @param mailHeader Тема сообщения
-     * @param mailBody   Тело сообщения
-     */
-    protected void send(String mailTo, String mailHeader, String mailBody) {
-        // Если отправители присутствуют - отправляем сообщение
-        if (!mailTo.trim().equalsIgnoreCase("")) {
-            // Просто вызываем mailx
-            procExec mailx = new procExec(debug, log.getModuleSubLogger("Process executor"), "mailx", "-s", mailHeader, mailTo);
-            try {
-                mailx.execute();
-                StreamGrabber input = null;
-                if (debug) input = new StreamGrabber(mailx.getStdout(), "", log.getModuleSubLogger("MailX stdout"));
-                BufferedWriter output = mailx.getStdin();
-                output.append(mailBody);
-                output.close();
-                mailx.waitFor();
+	 * @param eMail        Полное сообщение
+	 */
+	protected void send(fullMail eMail) {
+		if (rootMailer != null) {
+			rootMailer.send(eMail);
+		} else {
+			// Если отправители присутствуют - отправляем сообщение
+			if (mailTo.size() != 0) {
+				// Просто вызываем mailx
+				LinkedList<String> cmdLineBuilder = new LinkedList<>();    // Билдер команды
+				cmdLineBuilder.add("mailx");    // Команда
+				// Если тема сообщения есть - устанавливаем
+				if (!eMail.getMailTopic().trim().equals("")) {
+					cmdLineBuilder.add("-s");
+					cmdLineBuilder.add(eMail.getMailTopic());
+				}
+				// Вставляем адресатов
+				for (String TO : eMail.getRecipients()) {
+					cmdLineBuilder.add(TO);
+				}
+				// Преобразуем кучу в массив для procExec
+				String[] cmdLine = cmdLineBuilder.toArray(new String[cmdLineBuilder.size()]);
+				// Создаём исполнитель и посылаем сообщение
+				procExec mailx = new procExec(debug, log.getModuleSubLogger("Process executor"), cmdLine);
+				try {
+					mailx.execute();
+					StreamGrabber input = null;
+					if (debug) input = new StreamGrabber(mailx.getStdout(), "", log.getModuleSubLogger("MailX stdout"));
+					BufferedWriter output = mailx.getStdin();
+					output.append(eMail.getMailBody());
+					output.close();
+					mailx.waitFor();
 
-                if (input != null) {
-                    log.debug(
-                            new StringBuilder().append("Mailx stdout: ").append(System.lineSeparator())
-                                    .append(input.getResults()).append(System.lineSeparator())
-                                    .append("Process return: ").append(mailx.exitValue())
-                    );
-                }
-            } catch (IOException exc) {
-                log.appErrorWriter(exc);
-            } catch (InterruptedException exc) {
-                mailx.terminate();
-                log.debug("sendMail terminated");
-            }
-        } else {
-            log.debug("Send mail disabled");
-        }
-    }
+					if (input != null) {
+						log.debug(
+								new StringBuilder().append("Mailx stdout: ").append(System.lineSeparator())
+										.append(input.getResults()).append(System.lineSeparator())
+										.append("Process return: ").append(mailx.exitValue())
+						);
+					}
+				} catch (IOException exc) {
+					log.appErrorWriter(exc);
+				} catch (InterruptedException exc) {
+					mailx.terminate();
+					log.debug("sendMail terminated");
+				}
+			} else {
+				log.debug("Send mail disabled");
+			}
+		}
+	}
 
     /**
      * Смена/установка адресатов
@@ -129,15 +145,14 @@ public class mailx
      */
     @Override
     public void setMailTo(String mailTo) {
-        StringBuilder mailToBuilder = new StringBuilder();
-        StringTokenizer RAWmailTo = new StringTokenizer(
+		this.mailTo.clear();
+		StringTokenizer RAWmailTo = new StringTokenizer(
                 mailTo,
                 " ,;"
         );
         while (RAWmailTo.hasMoreElements())
-            mailToBuilder.append(RAWmailTo.nextToken());
-        this.mailTo = mailToBuilder.toString().trim();
-    }
+			this.mailTo.add(RAWmailTo.nextToken());
+	}
 
     /**
      * Получение экземпляра мейлера для модулей
